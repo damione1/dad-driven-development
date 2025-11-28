@@ -9,8 +9,10 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
+	"github.com/spf13/cobra"
 
 	"github.com/damione1/personal-website/internal/handlers"
+	"github.com/damione1/personal-website/internal/seeds"
 	"github.com/damione1/personal-website/internal/services"
 	_ "github.com/damione1/personal-website/pb_migrations"
 )
@@ -36,6 +38,38 @@ func main() {
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
 		Automigrate: true, // Auto-run migrations on app.Start()
 	})
+
+	// Register seed command
+	seedCmd := &cobra.Command{
+		Use:   "seed",
+		Short: "Seed database from jsoncv resume JSON file",
+		Long:  "Load resume data from a jsoncv-formatted JSON file and populate PocketBase collections",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resumePath, _ := cmd.Flags().GetString("resume")
+			if resumePath == "" {
+				return fmt.Errorf("--resume flag is required")
+			}
+
+			clearExisting, _ := cmd.Flags().GetBool("clear")
+			dryRun, _ := cmd.Flags().GetBool("dry-run")
+
+			// Initialize app (bootstrap) without starting server
+			if err := app.Bootstrap(); err != nil {
+				return fmt.Errorf("failed to bootstrap app: %w", err)
+			}
+
+			seeder := seeds.NewSeeder(app)
+			if err := seeder.Seed(resumePath, clearExisting, dryRun); err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+	seedCmd.Flags().String("resume", "", "Path to jsoncv resume JSON file (required)")
+	seedCmd.Flags().Bool("clear", true, "Clear existing data before seeding")
+	seedCmd.Flags().Bool("dry-run", false, "Validate and show what would be created without making changes")
+	app.RootCmd.AddCommand(seedCmd)
 
 	// Initialize services
 	contentManager := services.NewContentManager(app)
