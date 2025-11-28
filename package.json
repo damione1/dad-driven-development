@@ -1,0 +1,26 @@
+{
+  "name": "personal-website",
+  "version": "1.0.0",
+  "description": "Personal portfolio website built with PocketBase, Go, htmx, and Alpine.js",
+  "scripts": {
+    "build:css": "tailwindcss -i ./web/static/css/input.css -o ./web/static/css/styles.css --minify",
+    "watch:css": "tailwindcss -i ./web/static/css/input.css -o ./web/static/css/styles.css --watch",
+    "copy:htmx": "mkdir -p ./web/static/js && cp ./node_modules/htmx.org/dist/htmx.min.js ./web/static/js/",
+    "copy:alpine": "mkdir -p ./web/static/js && cp ./node_modules/alpinejs/dist/cdn.min.js ./web/static/js/alpine.min.js",
+    "copy:js": "npm run copy:htmx && npm run copy:alpine",
+    "build": "npm run copy:js && npm run build:css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damione1/personal-website.git"
+  },
+  "keywords": ["portfolio", "pocketbase", "htmx", "alpine", "go"],
+  "author": "Damien Goehrig",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.14",
+    "alpinejs": "^3.14.1",
+    "htmx.org": "^2.0.7",
+    "tailwindcss": "^4.1.14"
+  }
+}

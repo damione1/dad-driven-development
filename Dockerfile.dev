@@ -1,0 +1,38 @@
+# Development Dockerfile with Air for hot reloading
+FROM golang:1.25-alpine
+
+# Install dependencies
+RUN apk add --no-cache git gcc musl-dev nodejs npm
+
+# Install Air for hot reloading
+RUN go install github.com/air-verse/air@latest
+
+# Install templ
+RUN go install github.com/a-h/templ/cmd/templ@latest
+
+WORKDIR /app
+
+# Copy dependency files first (for better layer caching)
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy package files
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy Air configuration
+COPY .air.toml ./
+
+# Copy the rest of the application
+COPY . .
+
+# Build initial assets (JS dependencies + CSS)
+RUN npm run build
+
+# Generate initial templ files
+RUN templ generate
+
+EXPOSE 8090
+
+# Run Air for hot reloading
+CMD ["air", "-c", ".air.toml"]
