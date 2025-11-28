@@ -1,0 +1,83 @@
+package pages
+
+import (
+	"github.com/damione1/personal-website/web/templates"
+	"github.com/damione1/personal-website/web/templates/components"
+	"github.com/pocketbase/pocketbase/core"
+)
+
+templ BlogList(posts []*core.Record) {
+	@templates.Base("Blog") {
+		<div class="bg-white py-12">
+			<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				<div class="text-center mb-12">
+					<h1 class="text-4xl font-bold text-gray-900 mb-4">Blog</h1>
+					<p class="text-lg text-gray-600">Thoughts on development, technology, and more</p>
+				</div>
+				if len(posts) > 0 {
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						for _, post := range posts {
+							@components.PostCard(post)
+						}
+					</div>
+				} else {
+					<p class="text-center text-gray-500">No blog posts available yet.</p>
+				}
+			</div>
+		</div>
+	}
+}
+
+templ BlogDetail(post *core.Record, stackItems []*core.Record) {
+	@templates.Base(post.GetString("title")) {
+		<div class="bg-white py-12">
+			<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+				<div class="mb-8">
+					<a href="/blog" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">
+						← Back to Blog
+					</a>
+				</div>
+				if post.GetString("thumbnail") != "" {
+					<img src={ post.GetString("thumbnail") } alt={ post.GetString("title") } class="w-full h-96 object-cover rounded-lg mb-8"/>
+				}
+				<div class="text-sm text-gray-500 mb-4">
+					{ post.GetDateTime("published_at").Time().Format("January 2, 2006") }
+					<span class="mx-2">·</span>
+					{ post.GetString("view_count") } views
+				</div>
+				<h1 class="text-4xl font-bold text-gray-900 mb-4">
+					{ post.GetString("title") }
+				</h1>
+				<p class="text-xl text-gray-600 mb-8">
+					{ post.GetString("excerpt") }
+				</p>
+				if len(post.GetStringSlice("tags")) > 0 {
+					<div class="mb-8">
+						<div class="flex flex-wrap gap-2">
+							for _, tag := range post.GetStringSlice("tags") {
+								<span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+									{ tag }
+								</span>
+							}
+						</div>
+					</div>
+				}
+				if len(stackItems) > 0 {
+					<div class="mb-8">
+						<h3 class="text-lg font-semibold text-gray-900 mb-4">Related Technologies</h3>
+						<div class="flex flex-wrap gap-2">
+							for _, item := range stackItems {
+								@components.StackBadge(item)
+							}
+						</div>
+					</div>
+				}
+				if post.GetString("content") != "" {
+					<div class="prose prose-lg max-w-none">
+						{ post.GetString("content") }
+					</div>
+				}
+			</div>
+		</div>
+	}
+}

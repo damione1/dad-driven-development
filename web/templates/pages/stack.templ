@@ -1,0 +1,48 @@
+package pages
+
+import (
+	"github.com/damione1/personal-website/web/templates"
+	"github.com/pocketbase/pocketbase/core"
+)
+
+templ Stack(stackItems []*core.Record) {
+	@templates.Base("Tech Stack") {
+		<div class="bg-white py-12">
+			<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				<div class="text-center mb-12">
+					<h1 class="text-4xl font-bold text-gray-900 mb-4">Tech Stack</h1>
+					<p class="text-lg text-gray-600">Technologies and tools I work with</p>
+				</div>
+				if len(stackItems) > 0 {
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						for _, item := range stackItems {
+							<div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+								<div class="flex items-center mb-4">
+									if item.GetString("icon_url") != "" {
+										<img src={ item.GetString("icon_url") } alt={ item.GetString("name") } class="w-12 h-12 mr-4"/>
+									}
+									<div>
+										<h3 class="text-lg font-semibold text-gray-900">{ item.GetString("name") }</h3>
+										if item.GetString("category") != "" {
+											<p class="text-sm text-gray-500">{ item.GetString("category") }</p>
+										}
+									</div>
+								</div>
+								if item.GetString("description") != "" {
+									<p class="text-gray-600 mb-4">{ item.GetString("description") }</p>
+								}
+								if item.GetString("url") != "" {
+									<a href={ templ.URL(item.GetString("url")) } target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 text-sm">
+										Learn More →
+									</a>
+								}
+							</div>
+						}
+					</div>
+				} else {
+					<p class="text-center text-gray-500">No stack items available yet.</p>
+				}
+			</div>
+		</div>
+	}
+}

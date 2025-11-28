@@ -1,0 +1,65 @@
+package pages
+
+import (
+	"github.com/damione1/personal-website/web/templates"
+	"github.com/damione1/personal-website/web/templates/components"
+	"github.com/pocketbase/pocketbase/core"
+)
+
+templ Home(profile *core.Record, featuredProjects []*core.Record, recentPosts []*core.Record, projectStacks map[string][]*core.Record) {
+	@templates.Base("Home") {
+		<!-- Hero Section -->
+		<div class="bg-white">
+			<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 text-center">
+				if profile != nil {
+					if profile.GetString("avatar") != "" {
+						<img src={ profile.GetString("avatar") } alt={ profile.GetString("full_name") } class="w-32 h-32 rounded-full mx-auto mb-6"/>
+					}
+					<h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+						{ profile.GetString("full_name") }
+					</h1>
+					<p class="mt-6 text-lg leading-8 text-gray-600">
+						{ profile.GetString("title") }
+					</p>
+					if profile.GetString("bio") != "" {
+						<p class="mt-4 text-base text-gray-500 max-w-2xl mx-auto">
+							{ profile.GetString("bio") }
+						</p>
+					}
+				}
+			</div>
+		</div>
+		<!-- Featured Projects -->
+		if len(featuredProjects) > 0 {
+			<div class="bg-gray-50 py-12">
+				<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+					<div class="flex items-center justify-between mb-8">
+						<h2 class="text-3xl font-bold text-gray-900">Featured Projects</h2>
+						<a href="/projects" class="text-blue-600 hover:text-blue-800">View All →</a>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						for _, project := range featuredProjects {
+							@components.ProjectCard(project, projectStacks[project.Id])
+						}
+					</div>
+				</div>
+			</div>
+		}
+		<!-- Recent Posts -->
+		if len(recentPosts) > 0 {
+			<div class="bg-white py-12">
+				<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+					<div class="flex items-center justify-between mb-8">
+						<h2 class="text-3xl font-bold text-gray-900">Recent Posts</h2>
+						<a href="/blog" class="text-blue-600 hover:text-blue-800">View All →</a>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						for _, post := range recentPosts {
+							@components.PostCard(post)
+						}
+					</div>
+				</div>
+			</div>
+		}
+	}
+}

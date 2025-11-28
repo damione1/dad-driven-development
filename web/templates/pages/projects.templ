@@ -1,0 +1,79 @@
+package pages
+
+import (
+	"github.com/damione1/personal-website/web/templates"
+	"github.com/damione1/personal-website/web/templates/components"
+	"github.com/pocketbase/pocketbase/core"
+)
+
+templ ProjectsList(projects []*core.Record, projectStacks map[string][]*core.Record) {
+	@templates.Base("Projects") {
+		<div class="bg-white py-12">
+			<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				<div class="text-center mb-12">
+					<h1 class="text-4xl font-bold text-gray-900 mb-4">Projects</h1>
+					<p class="text-lg text-gray-600">Explore my work and side projects</p>
+				</div>
+				if len(projects) > 0 {
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						for _, project := range projects {
+							@components.ProjectCard(project, projectStacks[project.Id])
+						}
+					</div>
+				} else {
+					<p class="text-center text-gray-500">No projects available yet.</p>
+				}
+			</div>
+		</div>
+	}
+}
+
+templ ProjectDetail(project *core.Record, stackItems []*core.Record) {
+	@templates.Base(project.GetString("name")) {
+		<div class="bg-white py-12">
+			<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+				<div class="mb-8">
+					<a href="/projects" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">
+						← Back to Projects
+					</a>
+				</div>
+				if project.GetString("thumbnail") != "" {
+					<img src={ project.GetString("thumbnail") } alt={ project.GetString("name") } class="w-full h-96 object-cover rounded-lg mb-8"/>
+				}
+				<h1 class="text-4xl font-bold text-gray-900 mb-4">
+					{ project.GetString("name") }
+				</h1>
+				<p class="text-xl text-gray-600 mb-8">
+					{ project.GetString("description") }
+				</p>
+				if len(stackItems) > 0 {
+					<div class="mb-8">
+						<h3 class="text-lg font-semibold text-gray-900 mb-4">Technologies Used</h3>
+						<div class="flex flex-wrap gap-2">
+							for _, item := range stackItems {
+								@components.StackBadge(item)
+							}
+						</div>
+					</div>
+				}
+				<div class="flex gap-4 mb-8">
+					if project.GetString("github_url") != "" {
+						<a href={ templ.URL(project.GetString("github_url")) } target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800">
+							View on GitHub →
+						</a>
+					}
+					if project.GetString("live_url") != "" {
+						<a href={ templ.URL(project.GetString("live_url")) } target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+							Live Demo →
+						</a>
+					}
+				</div>
+				if project.GetString("content") != "" {
+					<div class="prose prose-lg max-w-none">
+						{ project.GetString("content") }
+					</div>
+				}
+			</div>
+		</div>
+	}
+}

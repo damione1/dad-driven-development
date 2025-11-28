@@ -1,0 +1,12 @@
+package components
+
+import "github.com/pocketbase/pocketbase/core"
+
+templ StackBadge(item *core.Record) {
+	<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+		if item.GetString("icon_url") != "" {
+			<img src={ item.GetString("icon_url") } alt={ item.GetString("name") } class="w-4 h-4 mr-1"/>
+		}
+		{ item.GetString("name") }
+	</span>
+}

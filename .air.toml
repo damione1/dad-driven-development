@@ -2,7 +2,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-cmd = "npm run copy:js && npm run build:css && templ generate && go build -o ./tmp/main ."
+cmd = "npm run copy:js && npm run build:css && ~/go/bin/templ generate && go build -o ./tmp/main ."
 bin = "tmp/main"
 args_bin = ["serve", "--http=0.0.0.0:8090", "--dir=/app/pb_data"]
 include_ext = ["go", "templ"]
