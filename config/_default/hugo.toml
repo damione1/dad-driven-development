@@ -6,7 +6,6 @@ enableRobotsTXT = true
 summaryLength = 30
 
 # Performance optimizations
-minify = true
 enableGitInfo = false
 enableEmoji = false
 
