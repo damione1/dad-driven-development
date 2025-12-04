@@ -12,7 +12,7 @@ serve:
 	hugo server -D --disableFastRender
 
 build:
-	hugo --minify
+	hugo
 
 clean:
 	rm -rf public/
@@ -21,4 +21,4 @@ optimize:
 	./scripts/image-processing.sh
 
 deploy: clean build
-	@echo "Build complete. Deploy to GitHub Pages manually or via CI/CD."
+	@echo "Build complete. Deploy to Cloudflare Pages manually or via CI/CD."

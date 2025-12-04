@@ -5,6 +5,11 @@ title = "Damien GOEHRIG"
 enableRobotsTXT = true
 summaryLength = 30
 
+# Performance optimizations
+minify = true
+enableGitInfo = false
+enableEmoji = false
+
 [pagination]
   pagerSize = 10
 
@@ -19,3 +24,43 @@ summaryLength = 30
 [sitemap]
   changefreq = "weekly"
   priority = 0.5
+
+# Image processing configuration for performance
+[imaging]
+  # Resample filter: Box, NearestNeighbor, Linear, Cubic, MitchellNetravali, Lanczos
+  resampleFilter = "Lanczos"
+  # Quality for JPEG (1-100, higher is better quality but larger file)
+  quality = 85
+  # Anchor point for cropping: Smart, Center, TopLeft, Top, TopRight, Left, Right, BottomLeft, Bottom, BottomRight
+  anchor = "Smart"
+  # Enable WebP format
+  [imaging.exif]
+    includeFields = ".*"
+    excludeFields = ""
+  [imaging.process]
+    # Process images in parallel
+    parallel = true
+
+# Minification settings
+[minify]
+  [minify.tdewolff.html]
+    keepComments = false
+    keepConditionalComments = true
+    keepDefaultAttrVals = true
+    keepDocumentTags = true
+    keepEndTags = true
+    keepQuotes = false
+    keepWhitespace = false
+  [minify.tdewolff.css]
+    keepCSS2 = true
+    precision = 0
+  [minify.tdewolff.js]
+    keepVarNames = false
+    precision = 0
+  [minify.tdewolff.json]
+    keepNumbers = false
+    precision = 0
+  [minify.tdewolff.svg]
+    precision = 0
+  [minify.tdewolff.xml]
+    keepWhitespace = false
