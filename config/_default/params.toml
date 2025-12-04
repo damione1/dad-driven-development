@@ -7,6 +7,9 @@ enableCodeCopy = true
 
 mainSections = ["blog"]
 
+# Default site description for SEO meta tags
+description = "Damien GOEHRIG - Backend Software Engineer (Go) with 10+ years of experience building reliable distributed systems. Focused on creating maintainable code with strong performance and observability."
+
 [homepage]
   layout = "profile"
   homepageImage = "img/profile.jpg"
