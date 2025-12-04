@@ -1,0 +1,21 @@
+baseURL = "https://damiengoehrig.ca/"
+defaultContentLanguage = "en"
+title = "Damien GOEHRIG"
+
+enableRobotsTXT = true
+summaryLength = 30
+
+[pagination]
+  pagerSize = 10
+
+[taxonomies]
+  stack = "stack"
+  tag = "tags"
+  category = "categories"
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+[sitemap]
+  changefreq = "weekly"
+  priority = 0.5

@@ -1,0 +1,24 @@
+languageCode = "fr"
+languageName = "Français"
+languageDirection = "ltr"
+contentDir = "content/fr"
+weight = 2
+title = "Damien GOEHRIG"
+
+[params]
+  displayName = "FR"
+  isoCode = "fr"
+  rtl = false
+  dateFormat = "2 January 2006"
+
+[params.author]
+  name = "Damien GOEHRIG"
+  image = "img/profile.jpg"
+  headline = "Ingénieur logiciel backend (Go)"
+  bio = "Passionné par les systèmes distribués, architectures évolutives et Go."
+  links = [
+    { github = "https://github.com/damione1/" },
+    { linkedin = "https://www.linkedin.com/in/damiengoehrig/" },
+    { email = "mailto:contact@damiengoehrig.ca" },
+    { rss = "/index.xml" }
+  ]

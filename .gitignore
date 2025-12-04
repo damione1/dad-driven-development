@@ -39,3 +39,12 @@ web/static/js/alpine.min.js
 # Backup files
 *.backup.*
 *.bak
+
+# Hugo
+/public/
+/resources/_gen/
+/assets/jsconfig.json
+hugo_stats.json
+
+# Old project files
+/old/

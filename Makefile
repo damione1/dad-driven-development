@@ -1,77 +1,24 @@
-.PHONY: dev dev-build docker-up docker-down docker-logs docker-clean clean help asdf-install asdf-plugins tidy test fmt
+.PHONY: help serve build clean optimize deploy
 
-help: ## Show this help message
-	@echo 'Usage: make [target]'
-	@echo ''
-	@echo 'Available targets:'
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+help:
+	@echo "Available commands:"
+	@echo "  make serve     - Start Hugo development server"
+	@echo "  make build     - Build production site"
+	@echo "  make clean     - Remove public/ directory"
+	@echo "  make optimize  - Optimize images"
+	@echo "  make deploy    - Build and deploy to GitHub Pages"
 
-asdf-plugins: ## Install asdf plugins (golang, nodejs)
-	@echo "Installing asdf plugins..."
-	@command -v asdf >/dev/null 2>&1 || { echo "Error: asdf is not installed. Install from https://asdf-vm.com/"; exit 1; }
-	@asdf plugin add golang https://github.com/asdf-community/asdf-golang.git 2>/dev/null || echo "  ✓ golang plugin already installed"
-	@asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git 2>/dev/null || echo "  ✓ nodejs plugin already installed"
-	@echo "All asdf plugins installed!"
+serve:
+	hugo server -D --disableFastRender
 
-asdf-install: asdf-plugins ## Install all dependencies from .tool-versions
-	@echo "Installing dependencies from .tool-versions..."
-	@command -v asdf >/dev/null 2>&1 || { echo "Error: asdf is not installed. Install from https://asdf-vm.com/"; exit 1; }
-	@asdf install
-	@echo ""
-	@echo "Installing templ (not in asdf)..."
-	@go install github.com/a-h/templ/cmd/templ@v0.3.819
-	@echo ""
-	@echo "All dependencies installed successfully!"
-	@echo ""
-	@echo "Installed versions:"
-	@asdf current
-	@echo "  templ: $$($$HOME/go/bin/templ version 2>/dev/null || echo 'installed at $$HOME/go/bin/templ (add $$HOME/go/bin to PATH)')"
-	@echo ""
-	@if ! command -v templ >/dev/null 2>&1; then \
-		echo "⚠️  Note: templ is not in your PATH. Add this to your shell config:"; \
-		echo "   export PATH=\"\$$HOME/go/bin:\$$PATH\""; \
-		echo "   Then run: source ~/.zshrc  (or ~/.bashrc)"; \
-	fi
+build:
+	hugo --minify
 
-dev: ## Run development server with Docker (live reload)
-	@echo "Starting development environment with Docker Compose..."
-	@echo "  - DEV_MODE=true (Secure cookies disabled for localhost)"
-	@docker compose up
+clean:
+	rm -rf public/
 
-dev-build: ## Rebuild development Docker images
-	@echo "Rebuilding development Docker images..."
-	@docker compose build
+optimize:
+	./scripts/image-processing.sh
 
-docker-up: ## Start all services in background
-	@echo "Starting services in detached mode..."
-	@docker compose up -d
-
-docker-down: ## Stop all services
-	@echo "Stopping all services..."
-	@docker compose down
-
-docker-logs: ## Show logs from all services
-	@docker compose logs -f
-
-docker-clean: ## Stop services and remove volumes
-	@echo "Stopping services and removing volumes..."
-	@docker compose down -v
-
-clean: ## Clean Docker artifacts and build cache
-	@echo "Cleaning Docker artifacts..."
-	@docker compose down -v --remove-orphans
-	@docker system prune -f
-	@echo "Clean complete"
-
-tidy: ## Tidy go modules
-	@echo "Tidying go modules..."
-	@go mod tidy
-
-test: ## Run tests
-	@echo "Running tests..."
-	@go test ./...
-
-fmt: ## Format code
-	@echo "Formatting code..."
-	@go fmt ./...
-	@templ fmt .
+deploy: clean build
+	@echo "Build complete. Deploy to GitHub Pages manually or via CI/CD."

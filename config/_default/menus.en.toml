@@ -1,0 +1,29 @@
+[[main]]
+  name = "About"
+  url = "/en/"
+  weight = 10
+
+[[main]]
+  name = "Resume"
+  url = "/en/resume/"
+  weight = 20
+
+[[main]]
+  name = "Blog"
+  url = "/en/blog/"
+  weight = 30
+
+
+[[main]]
+  identifier = "linkedin"
+  pre = "linkedin"
+  url = "https://www.linkedin.com/in/damiengoehrig/"
+  weight = 400
+  newTab = true
+
+[[main]]
+  identifier = "github"
+  pre = "github"
+  url = "https://github.com/damione1/"
+  weight = 400
+  newTab = true

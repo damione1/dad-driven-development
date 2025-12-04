@@ -1,0 +1,200 @@
+{{ define "main" }}
+
+<style>
+  .resume-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    .resume-container {
+      grid-template-columns: 300px 1fr;
+      gap: 3rem;
+    }
+  }
+
+  .resume-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .resume-sidebar-section {
+    background: rgba(115, 115, 115, 0.1);
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+  }
+
+  .dark .resume-sidebar-section {
+    background: rgba(60, 60, 60, 0.3);
+  }
+
+  .resume-sidebar h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+  }
+
+  .resume-sidebar-content {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .resume-sidebar-content a {
+    color: var(--color-primary-600);
+    word-break: break-all;
+  }
+
+  .dark .resume-sidebar-content a {
+    color: var(--color-primary-400);
+  }
+
+  .resume-sidebar-content a:hover {
+    text-decoration: underline;
+  }
+
+  .resume-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .resume-sidebar li {
+    margin-bottom: 0.5rem;
+  }
+
+  .resume-main h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .resume-tagline {
+    font-size: 1.25rem;
+    color: rgba(115, 115, 115, 0.8);
+    margin-bottom: 0.25rem;
+  }
+
+  .dark .resume-tagline {
+    color: rgba(200, 200, 200, 0.8);
+  }
+
+  .resume-location {
+    font-size: 0.875rem;
+    color: rgba(115, 115, 115, 0.6);
+    margin-bottom: 2rem;
+  }
+
+  .dark .resume-location {
+    color: rgba(200, 200, 200, 0.6);
+  }
+</style>
+
+<div class="resume-container">
+  <!-- Sidebar -->
+  <aside class="resume-sidebar">
+
+    {{ with .Params.contact }}
+    <div class="resume-sidebar-section">
+      <h3>Contact</h3>
+      <div class="resume-sidebar-content">
+        {{ with .email }}
+        <div style="margin-bottom: 0.75rem;">
+          <strong>Email:</strong><br>
+          <a href="mailto:{{ . }}">{{ . }}</a>
+        </div>
+        {{ end }}
+        {{ with .website }}
+        <div style="margin-bottom: 0.75rem;">
+          <strong>Website:</strong><br>
+          <a href="{{ . }}" target="_blank">{{ . }}</a>
+        </div>
+        {{ end }}
+        {{ with .linkedin }}
+        <div style="margin-bottom: 0.75rem;">
+          <strong>LinkedIn:</strong><br>
+          <a href="{{ . }}" target="_blank">{{ . }}</a>
+        </div>
+        {{ end }}
+        {{ with .github }}
+        <div>
+          <strong>GitHub:</strong><br>
+          <a href="{{ . }}" target="_blank">{{ . }}</a>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+    {{ end }}
+
+    {{ with .Params.summary }}
+    <div class="resume-sidebar-section">
+      <h3>Summary</h3>
+      <div class="resume-sidebar-content">
+        <p style="margin: 0;">{{ . }}</p>
+      </div>
+    </div>
+    {{ end }}
+
+    {{ with .Params.skills }}
+    <div class="resume-sidebar-section">
+      <h3>Top Skills</h3>
+      <div class="resume-sidebar-content">
+        <ul>
+          {{ range . }}
+          <li>• {{ . }}</li>
+          {{ end }}
+        </ul>
+      </div>
+    </div>
+    {{ end }}
+
+    {{ with .Params.languages }}
+    <div class="resume-sidebar-section">
+      <h3>Languages</h3>
+      <div class="resume-sidebar-content">
+        <ul>
+          {{ range . }}
+          <li><strong>{{ .name }}:</strong> {{ .level }}</li>
+          {{ end }}
+        </ul>
+      </div>
+    </div>
+    {{ end }}
+
+    {{ with .Params.certifications }}
+    <div class="resume-sidebar-section">
+      <h3>Certifications</h3>
+      <div class="resume-sidebar-content">
+        <ul>
+          {{ range . }}
+          <li>• {{ . }}</li>
+          {{ end }}
+        </ul>
+      </div>
+    </div>
+    {{ end }}
+
+  </aside>
+
+  <!-- Main Content -->
+  <main class="resume-main">
+    <h1>{{ .Title | emojify }}</h1>
+    {{ with .Params.tagline }}
+    <div class="resume-tagline">{{ . }}</div>
+    {{ end }}
+    {{ with .Params.location }}
+    <div class="resume-location">{{ . }}</div>
+    {{ end }}
+
+    <div class="prose dark:prose-invert max-w-none">
+      {{ .Content }}
+    </div>
+  </main>
+
+</div>
+
+{{ end }}
