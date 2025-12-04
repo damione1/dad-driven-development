@@ -1,0 +1,41 @@
+colorScheme = "noir"
+defaultAppearance = "dark"
+autoSwitchAppearance = true
+
+enableSearch = true
+enableCodeCopy = true
+
+mainSections = ["blog"]
+
+[homepage]
+  layout = "profile"
+  homepageImage = "img/profile.jpg"
+  showRecent = true
+  showRecentItems = 5
+  cardView = true
+
+[article]
+  showDate = true
+  showDateUpdated = false
+  showAuthor = true
+  showBreadcrumbs = true
+  showDraftLabel = true
+  showEdit = false
+  showSummary = true
+  showTableOfContents = true
+  showTaxonomies = true
+  showWordCount = true
+  showComments = false
+  sharingLinks = ["linkedin", "twitter", "reddit", "email"]
+
+[list]
+  showBreadcrumbs = true
+  showSummary = true
+  showTableOfContents = false
+  showCards = true
+  groupByYear = true
+
+[typography]
+  fontFace = "system-ui"
+  fontSize = "1.1rem"
+  lineHeight = 1.7

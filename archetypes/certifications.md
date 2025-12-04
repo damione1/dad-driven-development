@@ -1,10 +1,12 @@
 ---
 title: "{{ replace .File.ContentBaseName `-` ` ` | title }}"
 issuer: ""
-date: ""
-url: ""
+date: {{ .Date }}
+externalUrl: ""
 stack: []
 draft: false
+showAuthor: false
+showDate: true
 ---
 
 Certification details...

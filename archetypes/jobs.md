@@ -5,9 +5,11 @@ position: ""
 location: ""
 startDate: ""
 endDate: ""
-url: ""
+externalUrl: ""
 stack: []
 draft: false
+showAuthor: false
+showDate: false
 ---
 
 Job summary and highlights...

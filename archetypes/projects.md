@@ -4,11 +4,14 @@ date: {{ .Date }}
 draft: false
 stack: []
 description: ""
-url: ""
+externalUrl: ""
 startDate: ""
 endDate: ""
 type: ""
 roles: []
+showAuthor: true
+showDate: true
+showTableOfContents: true
 ---
 
 Project description and highlights...
