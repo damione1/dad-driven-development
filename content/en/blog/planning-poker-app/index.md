@@ -8,7 +8,7 @@ categories: ["Development", "Backend"]
 images: ["planning-poker-featured.jpg"]
 ---
 
-So I built this Planning Poker app. You know, that agile estimation thing where teams gather around and vote on story points? Yeah, I decided to make it web-based and real-time. And then... well, let's just say I got a little ambitious with the deployment setup.
+So I built this Planning Poker app. You know, that agile estimation thing where teams gather around and vote on story points? Yeah, I decided to make it web-based and real-time [pokerplanning.net](https://pokerplanning.net/). And then... well, let's just say I got a little ambitious with the deployment setup.
 
 ## The Idea
 
@@ -109,3 +109,5 @@ Yeah, it works. You can run `make dev` and it spins up locally with live reload.
 Is the deployment way too complex for a Planning Poker app that probably won't ever break a sweat at scale? Absolutely. But hey, it's there, it works, and now I've got a template for deploying Go apps to AWS without touching SSH. That's worth something, right?
 
 The real lesson though? Don't over-engineer the database. SQLite did the job. PocketBase saved me from spending three days on boilerplate. Go's concurrency primitives made the hard parts easy. And sometimes the best infrastructure is the one that gets out of your way and just works.
+
+You could actually use this to run Planning Poker sessions right now at [pokerplanning.net](https://pokerplanning.net/).

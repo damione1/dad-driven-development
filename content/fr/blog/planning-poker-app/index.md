@@ -8,7 +8,7 @@ categories: ["Développement", "Backend"]
 images: ["planning-poker-featured.jpg"]
 ---
 
-Fait que j'ai construit cette app de Planning Poker. Tu sais, le truc agile d'estimation où l'équipe se rassemble pour voter sur les story points ? Ouais, j'ai décidé de la faire web et temps réel. Et puis... disons juste que je suis devenu un peu ambitieux avec le déploiement.
+Fait que j'ai construit cette app de Planning Poker. Tu sais, le truc agile d'estimation où l'équipe se rassemble pour voter sur les story points ? Ouais, j'ai décidé de la faire web et temps réel [pokerplanning.net](https://pokerplanning.net/). Et puis... disons juste que je suis devenu un peu ambitieux avec le déploiement.
 
 ## L'idée
 
@@ -109,3 +109,5 @@ Ouais, ça marche. Tu peux rouler `make dev` pis ça démarre localement avec re
 Est-ce que le déploiement est beaucoup trop complexe pour une app Planning Poker qui va probablement jamais suer à grande échelle ? Absolument. Mais bon, c'est là, ça marche, pis maintenant j'ai un template pour déployer des apps Go sur AWS sans toucher à SSH. Ça vaut quelque chose, non ?
 
 La vraie leçon par contre ? Complexifie pas trop la base de données. SQLite a fait la job. PocketBase m'a sauvé de passer trois jours sur du boilerplate. Les primitives de concurrence de Go ont rendu les parties difficiles faciles. Pis des fois, la meilleure infrastructure c'est celle qui se tasse de ton chemin pis qui marche juste.
+
+Tu pourrais vraiment l'utiliser pour tes sessions de Planning Poker maintenant sur [pokerplanning.net](https://pokerplanning.net/).
