@@ -1,16 +1,16 @@
 [[main]]
   name = "About"
-  url = "/en/"
+  url = "/"
   weight = 10
 
 [[main]]
   name = "Resume"
-  url = "/en/resume/"
+  url = "/resume/"
   weight = 20
 
 [[main]]
   name = "Blog"
-  url = "/en/blog/"
+  url = "/blog/"
   weight = 30
 
 
