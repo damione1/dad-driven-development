@@ -14,8 +14,8 @@ title = "Damien GOEHRIG"
 [params.author]
   name = "Damien GOEHRIG"
   image = "img/profile.jpg"
-  headline = "Ingénieur logiciel backend (Go)"
-  bio = "Passionné par les systèmes distribués, architectures évolutives et Go."
+  headline = "Ingénieur de données"
+  bio = "10+ ans en développement logiciel, maintenant spécialisé en pipelines ETL, modernisation de plateformes d'analytique et MLOps."
   links = [
     { github = "https://github.com/damione1/" },
     { linkedin = "https://www.linkedin.com/in/damiengoehrig/" },

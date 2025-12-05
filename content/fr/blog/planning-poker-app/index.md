@@ -12,15 +12,15 @@ Fait que j'ai construit cette app de Planning Poker. Tu sais, le truc agile d'es
 
 ## L'idée
 
-Les sessions de Planning Poker c'est généralement le chaos dans une salle de conférence — quelqu'un écrit sur un tableau, quelqu'un d'autre crie son estimation, pis la moitié de l'équipe est dans la lune. Le problème est simple : t'as besoin de quelque chose qui marche instantanément, qui demande pas d'inscription, pis qui juste... marche.
+Les sessions de Planning Poker c'est généralement le chaos dans une salle de conférence - quelqu'un écrit sur un tableau, quelqu'un d'autre crie son estimation, pis la moitié de l'équipe est dans la lune. Le problème est simple : t'as besoin de quelque chose qui marche instantanément, qui demande pas d'inscription, pis qui juste... marche.
 
 Fait que j'ai pris Go pour le backend (rapide, compilé, un bon modèle de concurrence), PocketBase comme couche tout-en-un pour la base de données et l'authentification, pis j'ai ajouté htmx + Alpine.js sur le frontend pour cette sensation réactive sans bâtir une app React complète. WebSockets pour les mises à jour temps réel. Simple.
 
 ## Pourquoi PocketBase ? (Le point de vue du gars WordPress)
 
-Voici l'affaire — j'ai passé des années à faire du développement WordPress. Je l'ai aimé, détesté, la routine habituelle. Quand j'ai transitionné vers du vrai développement logiciel, j'ai commencé à faire toute la danse : choisir un ORM, configurer les migrations, brancher l'authentification, bâtir ton routeur, gérer les changements de schéma de base de données... c'est épuisant.
+Voici l'affaire - j'ai passé des années à faire du développement WordPress. Je l'ai aimé, détesté, la routine habituelle. Quand j'ai transitionné vers du vrai développement logiciel, j'ai commencé à faire toute la danse : choisir un ORM, configurer les migrations, brancher l'authentification, bâtir ton routeur, gérer les changements de schéma de base de données... c'est épuisant.
 
-PocketBase m'a fait penser à l'équivalent Go de ce que WordPress était pour moi — une base de référence sensée tout-en-un. T'as une couche de base de données, l'authentification, une interface d'admin, des migrations qui marchent pour vrai, pis un routeur HTTP. C'est assez structuré pour avancer vite, mais assez flexible pour étendre.
+PocketBase m'a fait penser à l'équivalent Go de ce que WordPress était pour moi - une base de référence sensée tout-en-un. T'as une couche de base de données, l'authentification, une interface d'admin, des migrations qui marchent pour vrai, pis un routeur HTTP. C'est assez structuré pour avancer vite, mais assez flexible pour étendre.
 
 Je voulais pas passer la prochaine semaine à gosser avec Gorm, écrire des fichiers de migration, bâtir un middleware d'authentification pis configurer un routeur. Je voulais livrer quelque chose en quelques jours. PocketBase m'a permis de me concentrer sur le vrai problème : faire marcher Planning Poker en temps réel.
 
@@ -30,7 +30,7 @@ Pis si ça se transforme un jour en quelque chose que je veux monétiser comme S
 
 Pour vrai : j'adore Postgres. Sérieusement. Mais pour ce projet-là ? SQLite c'était le bon choix.
 
-La plupart du monde réalise pas ça, mais SQLite c'est le moteur de base de données [le plus déployé](https://sqlite.org/mostdeployed.html) au monde. Ton téléphone a probablement une douzaine de bases SQLite qui roulent en ce moment. Android, iOS, Firefox, Chrome — tout SQLite. C'est plate, fiable, pis vraiment sous-estimé.
+La plupart du monde réalise pas ça, mais SQLite c'est le moteur de base de données [le plus déployé](https://sqlite.org/mostdeployed.html) au monde. Ton téléphone a probablement une douzaine de bases SQLite qui roulent en ce moment. Android, iOS, Firefox, Chrome - tout SQLite. C'est plate, fiable, pis vraiment sous-estimé.
 
 Pour une app Planning Poker qui a pas besoin de mise à l'échelle horizontale ou de transactions multi-utilisateurs complexes à grande échelle, SQLite c'est _exactement_ ce qu'il te faut. Pas de serveur de base de données séparé à gérer, pas de maux de tête de pooling de connexions, pas d'appels de crise "est-ce que la DB est down ?" à 3h du matin. Ça vit dans un fichier. Tu peux le sauvegarder, le versionner, le déplacer.
 
@@ -47,7 +47,7 @@ La boucle principale est pas mal directe :
 - Révélation et discussion
 - On recommence
 
-Y'a aussi des affaires basées sur les rôles — tu peux être un voteur ou juste spectateur. Les créateurs de salle peuvent verrouiller les choses comme ils veulent. Tout se synchronise en temps réel via WebSocket, fait que quand quelqu'un vote, tout le monde le voit instantanément (ou voit qu'il a voté, du moins — les votes sont cachés jusqu'à la révélation).
+Y'a aussi des affaires basées sur les rôles - tu peux être un voteur ou juste spectateur. Les créateurs de salle peuvent verrouiller les choses comme ils veulent. Tout se synchronise en temps réel via WebSocket, fait que quand quelqu'un vote, tout le monde le voit instantanément (ou voit qu'il a voté, du moins - les votes sont cachés jusqu'à la révélation).
 
 La gestion d'état est propre. Les tours ont des états : vote, révélé, terminé. Les participants suivent qui est où. Les votes vivent dans la base de données. Les salles expirent automatiquement après 24 heures fait que tu stockes pas de données mortes pour toujours.
 
@@ -76,7 +76,7 @@ Au lieu de juste le lancer sur un serveur avec SSH, j'ai décidé d'aller en mod
 6. Docker Compose démarre les conteneurs
 7. Les vérifications de santé valident que tout est en ligne
 
-Zéro clé SSH exposée. Aucun port ouvert sauf HTTP/HTTPS. Tout est audité dans CloudTrail. Pis ouais, j'suis allé full Terraform sur l'infrastructure — EC2, groupes de sécurité, rôles IAM, toute la patente.
+Zéro clé SSH exposée. Aucun port ouvert sauf HTTP/HTTPS. Tout est audité dans CloudTrail. Pis ouais, j'suis allé full Terraform sur l'infrastructure - EC2, groupes de sécurité, rôles IAM, toute la patente.
 
 Est-ce excessif pour une app Planning Poker ? 100%. Est-ce que j'aurais pu juste SSH dans une machine pis la rouler ? Ouais. Mais de cette façon-là, déployer c'est littéralement juste `git tag v1.0.0 && git push origin v1.0.0`. Deux minutes plus tard c'est en ligne. Pis t'as une piste d'audit, des capacités de rollback automatique, pis de l'infrastructure-as-code. Fait que vraiment, je suis juste minutieux.
 
@@ -94,11 +94,11 @@ PocketBase c'était la vraie découverte. Tout le monde veut bâtir un backend, 
 
 htmx + Alpine c'est sous-estimé pour ce genre de projets. Pas de maux de tête de pipeline de build, pas de fatigue de framework JavaScript, juste des attributs HTML déclaratifs qui font ce que t'attends. Amélioration progressive, hypermédia, toutes ces bonnes affaires-là. T'écris moins de code, c'est plus facile à suivre, pis ton frontend devient pas un cauchemar de maintenance dans six mois.
 
-Pis les goroutines de Go ont rendu le hub WebSocket trivial. Diffuser des messages à des milliers de connexions ? Goroutines avec channels. Fait. C'est le vrai avantage de Go pour ce cas d'utilisation — de la concurrence qui te rend pas fou.
+Pis les goroutines de Go ont rendu le hub WebSocket trivial. Diffuser des messages à des milliers de connexions ? Goroutines avec channels. Fait. C'est le vrai avantage de Go pour ce cas d'utilisation - de la concurrence qui te rend pas fou.
 
 ## Le vrai défi
 
-Honnêtement ? Réussir la machine d'état. Les tours doivent s'enchaîner proprement : vote → révélé → terminé → nouveau tour. Les participants doivent rester synchronisés. Les connexions tombent pis se reconnectent — tu peux pas perdre le vote de quelqu'un parce que son WiFi a flanché.
+Honnêtement ? Réussir la machine d'état. Les tours doivent s'enchaîner proprement : vote → révélé → terminé → nouveau tour. Les participants doivent rester synchronisés. Les connexions tombent pis se reconnectent - tu peux pas perdre le vote de quelqu'un parce que son WiFi a flanché.
 
 Ça m'a pris plus de réflexion que le déploiement. L'infrastructure faisait juste... ce que l'infrastructure fait. La partie difficile c'était de s'assurer que la logique de vote était solide.
 
