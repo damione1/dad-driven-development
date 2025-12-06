@@ -30,3 +30,29 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center;
   color: #ffffff;
 }
+
+/* Mobile-friendly language switcher */
+@media (max-width: 768px) {
+  /* Increase touch target for language switcher links */
+  nav .language-switcher a,
+  .language-switcher a,
+  [id*="language"] a,
+  .nav-link[hreflang] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.25rem;
+  }
+
+  /* Ensure language switcher container has proper spacing */
+  nav .language-switcher,
+  .language-switcher,
+  [id*="language"] {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+}

@@ -42,7 +42,7 @@ certifications:
 
 ### Groupe Alesco
 
-#### Ingénieur données & IA | Pipelines ETL · MLOps | Plateforme analytique
+#### Ingénieur principal données & IA | Pipelines ETL · MLOps | Plateforme analytique
 
 _Octobre 2025 - Présent | Saint-Hubert, Québec_
 

@@ -42,7 +42,7 @@ certifications:
 
 ### Groupe Alesco
 
-#### Data & AI Engineer | ETL Pipelines · MLOps | Analytics Platform
+#### Lead Data & AI Engineer | ETL Pipelines · MLOps | Analytics Platform
 
 _October 2025 - Present | Saint-Hubert, Quebec_
 
