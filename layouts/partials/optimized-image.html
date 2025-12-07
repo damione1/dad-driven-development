@@ -1,0 +1,18 @@
+{{/*
+  Partial pour convertir automatiquement une image en WebP
+  Utilise le partial responsive-image avec des paramètres par défaut
+  
+  Usage simple:
+  {{ partial "optimized-image.html" (dict "src" "image.jpg" "page" .) }}
+  {{ partial "optimized-image.html" (dict "src" "img/global.jpg") }}
+  
+  Usage avec options:
+  {{ partial "optimized-image.html" (dict "src" "image.jpg" "page" . "alt" "Description" "loading" "eager") }}
+*/}}
+{{- $params := dict -}}
+{{- $params = merge $params . -}}
+{{- if not $params.page }}
+  {{- $params = merge $params (dict "page" $) -}}
+{{- end -}}
+{{- partial "responsive-image.html" $params -}}
+

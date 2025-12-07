@@ -3,22 +3,39 @@
 
   Usage pour images normales (lazy loading):
   {{ partial "responsive-image.html" (dict "src" "img/photo.jpg" "alt" "Description") }}
+  {{ partial "responsive-image.html" (dict "src" "photo.jpg" "page" .) }}  <!-- Pour page bundle -->
 
   Usage pour image LCP (hero/featured - chargement prioritaire):
   {{ partial "responsive-image.html" (dict "src" "img/hero.jpg" "alt" "Hero" "loading" "eager" "fetchpriority" "high") }}
 
   Conversion automatique: JPEG/PNG → WebP avec multiples tailles (400w, 800w, 1200w)
+  
+  Supporte:
+  - Assets globaux (static/assets)
+  - Page bundle resources (si "page" est fourni)
 */}}
 {{ $src := .src }}
 {{ $alt := .alt | default "" }}
 {{ $loading := .loading | default "lazy" }}
 {{ $fetchpriority := .fetchpriority | default "" }}
+{{ $page := .page }}
 
-{{ with resources.Get $src }}
+{{- /* Essaie d'abord d'obtenir l'image depuis les page resources (page bundle) */ -}}
+{{ $img := false }}
+{{- if $page }}
+  {{- $img = $page.Resources.Get $src -}}
+{{- end -}}
+
+{{- /* Si pas trouvé, essaie depuis les assets globaux */ -}}
+{{- if not $img }}
+  {{- $img = resources.Get $src -}}
+{{- end -}}
+
+{{- if $img }}
   {{/* Génère 3 variantes WebP de tailles différentes pour responsive */}}
-  {{ $small := .Resize "400x webp q85 Lanczos" }}
-  {{ $medium := .Resize "800x webp q85 Lanczos" }}
-  {{ $large := .Resize "1200x webp q85 Lanczos" }}
+  {{ $small := $img.Resize "400x webp q85 Lanczos" }}
+  {{ $medium := $img.Resize "800x webp q85 Lanczos" }}
+  {{ $large := $img.Resize "1200x webp q85 Lanczos" }}
 
   <img
     src="{{ $medium.RelPermalink }}"
@@ -32,4 +49,12 @@
     width="{{ $medium.Width }}"
     height="{{ $medium.Height }}"
   >
-{{ end }}
+{{- else }}
+  {{- /* Fallback: si l'image n'est pas trouvée, utilise le src tel quel */ -}}
+  <img
+    src="{{ $src }}"
+    {{- with $alt }} alt="{{ . }}"{{ end -}}
+    loading="{{ $loading }}"
+    {{ with $fetchpriority }}fetchpriority="{{ . }}"{{ end }}
+  >
+{{- end -}}

@@ -1,0 +1,45 @@
+{{/*
+  Helper function pour obtenir une image optimisée depuis le frontmatter
+  
+  Usage:
+  {{ $img := partial "get-optimized-image.html" (dict "src" "image.jpg" "page" .) }}
+  {{ $img := partial "get-optimized-image.html" (dict "src" .Params.images.first "page" .) }}
+  
+  Retourne un objet resource avec les variantes WebP déjà générées
+*/}}
+{{- $src := .src -}}
+{{- $page := .page | default $ -}}
+{{- $img := false -}}
+
+{{- /* Essaie d'abord depuis les page resources (page bundle) */ -}}
+{{- if $page }}
+  {{- $img = $page.Resources.Get $src -}}
+{{- end -}}
+
+{{- /* Si pas trouvé, essaie depuis les assets globaux */ -}}
+{{- if not $img }}
+  {{- $img = resources.Get $src -}}
+{{- end -}}
+
+{{- if $img }}
+  {{- /* Génère les variantes WebP */ -}}
+  {{- $small := $img.Resize "400x webp q85 Lanczos" -}}
+  {{- $medium := $img.Resize "800x webp q85 Lanczos" -}}
+  {{- $large := $img.Resize "1200x webp q85 Lanczos" -}}
+  
+  {{- /* Retourne un objet avec toutes les variantes */ -}}
+  {{- dict 
+    "original" $img
+    "small" $small
+    "medium" $medium
+    "large" $large
+    "src" $medium.RelPermalink
+    "srcset" (printf "%s 400w, %s 800w, %s 1200w" $small.RelPermalink $medium.RelPermalink $large.RelPermalink)
+    "width" $medium.Width
+    "height" $medium.Height
+  -}}
+{{- else }}
+  {{- /* Fallback: retourne le src original */ -}}
+  {{- dict "src" $src "width" "" "height" "" -}}
+{{- end -}}
+

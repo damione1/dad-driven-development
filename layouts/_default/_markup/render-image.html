@@ -1,0 +1,49 @@
+{{/*
+  Render hook pour convertir automatiquement les images markdown en WebP
+  avec support responsive (srcset)
+
+  Les images dans le markdown sont automatiquement converties en WebP
+  avec plusieurs tailles pour le responsive loading.
+*/}}
+{{- $destination := .Destination | safeURL -}}
+{{- $alt := .PlainText | default "" -}}
+{{- $title := .Title | default "" -}}
+{{- $isBlock := .IsBlock -}}
+
+{{- /* Essaie d'abord d'obtenir l'image depuis les page resources (page bundle) */ -}}
+{{- $img := false -}}
+{{- if .Page }}
+  {{- $img = .Page.Resources.Get $destination -}}
+{{- end -}}
+
+{{- /* Si pas trouvé, essaie depuis les assets globaux */ -}}
+{{- if not $img }}
+  {{- $img = resources.Get $destination -}}
+{{- end -}}
+
+{{- /* Si l'image est trouvée, on la traite avec Hugo */ -}}
+{{- if $img }}
+  {{- /* Génère 3 variantes WebP de tailles différentes pour responsive */ -}}
+  {{- $small := $img.Resize "400x webp q85 Lanczos" -}}
+  {{- $medium := $img.Resize "800x webp q85 Lanczos" -}}
+  {{- $large := $img.Resize "1200x webp q85 Lanczos" -}}
+
+  <img
+    src="{{ $medium.RelPermalink }}"
+    srcset="{{ $small.RelPermalink }} 400w,
+            {{ $medium.RelPermalink }} 800w,
+            {{ $large.RelPermalink }} 1200w"
+    sizes="(max-width: 600px) 400px, (max-width: 1000px) 800px, 1200px"
+    {{- with $alt }} alt="{{ . }}"{{ end -}}
+    {{- with $title }} title="{{ . }}"{{ end -}}
+    loading="lazy"
+    width="{{ $medium.Width }}"
+    height="{{ $medium.Height }}"
+  >
+{{- else }}
+  {{- /* Fallback: si l'image n'est pas trouvée, utilise le rendu par défaut */ -}}
+  <img src="{{ $destination }}"
+    {{- with $alt }} alt="{{ . }}"{{ end -}}
+    {{- with $title }} title="{{ . }}"{{ end -}}
+  >
+{{- end -}}

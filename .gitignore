@@ -45,6 +45,7 @@ web/static/js/alpine.min.js
 /resources/_gen/
 /assets/jsconfig.json
 hugo_stats.json
+/_vendor/
 
 # Old project files
 /old/
