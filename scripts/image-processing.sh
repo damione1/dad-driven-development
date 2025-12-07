@@ -2,10 +2,17 @@
 # Image optimization using ImageMagick
 set -e
 
+# Check if ImageMagick is available
+if ! command -v convert &> /dev/null; then
+    echo "Warning: ImageMagick (convert) not found. Skipping image preprocessing."
+    echo "Images will be processed by Hugo's built-in image processing instead."
+    exit 0
+fi
+
 CONTENT_DIR="content"
 STATIC_DIR="static/images"
 
-echo "Processing images..."
+echo "Processing images with ImageMagick..."
 
 find "$CONTENT_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | while read img; do
     filename=$(basename "$img")

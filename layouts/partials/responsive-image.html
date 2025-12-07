@@ -1,0 +1,35 @@
+{{/*
+  Partial pour images optimisées avec conversion WebP automatique
+
+  Usage pour images normales (lazy loading):
+  {{ partial "responsive-image.html" (dict "src" "img/photo.jpg" "alt" "Description") }}
+
+  Usage pour image LCP (hero/featured - chargement prioritaire):
+  {{ partial "responsive-image.html" (dict "src" "img/hero.jpg" "alt" "Hero" "loading" "eager" "fetchpriority" "high") }}
+
+  Conversion automatique: JPEG/PNG → WebP avec multiples tailles (400w, 800w, 1200w)
+*/}}
+{{ $src := .src }}
+{{ $alt := .alt | default "" }}
+{{ $loading := .loading | default "lazy" }}
+{{ $fetchpriority := .fetchpriority | default "" }}
+
+{{ with resources.Get $src }}
+  {{/* Génère 3 variantes WebP de tailles différentes pour responsive */}}
+  {{ $small := .Resize "400x webp q85 Lanczos" }}
+  {{ $medium := .Resize "800x webp q85 Lanczos" }}
+  {{ $large := .Resize "1200x webp q85 Lanczos" }}
+
+  <img
+    src="{{ $medium.RelPermalink }}"
+    srcset="{{ $small.RelPermalink }} 400w,
+            {{ $medium.RelPermalink }} 800w,
+            {{ $large.RelPermalink }} 1200w"
+    sizes="(max-width: 600px) 400px, (max-width: 1000px) 800px, 1200px"
+    alt="{{ $alt }}"
+    loading="{{ $loading }}"
+    {{ with $fetchpriority }}fetchpriority="{{ . }}"{{ end }}
+    width="{{ $medium.Width }}"
+    height="{{ $medium.Height }}"
+  >
+{{ end }}

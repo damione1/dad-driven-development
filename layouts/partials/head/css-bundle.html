@@ -1,0 +1,14 @@
+{{/* Bundle CSS personnalisé avec minify + fingerprint + SRI */}}
+{{ $customCSS := slice }}
+
+{{/* Ajouter custom.css au bundle si existe */}}
+{{ with resources.Get "css/custom.css" }}
+  {{ $customCSS = $customCSS | append . }}
+{{ end }}
+
+{{/* Créer le bundle si des fichiers CSS personnalisés existent */}}
+{{ if gt (len $customCSS) 0 }}
+  {{ $bundle := $customCSS | resources.Concat "css/bundle.css" | minify | fingerprint }}
+  <link rel="preload" href="{{ $bundle.RelPermalink }}" as="style" integrity="{{ $bundle.Data.Integrity }}" crossorigin>
+  <link rel="stylesheet" href="{{ $bundle.RelPermalink }}" integrity="{{ $bundle.Data.Integrity }}" crossorigin>
+{{ end }}

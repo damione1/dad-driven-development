@@ -1,0 +1,84 @@
+{{/* Sidebar resume - cacheable par langue via partialCached */}}
+<aside class="resume-sidebar">
+
+  {{ with .Params.contact }}
+  <div class="resume-sidebar-section">
+    <h3>Contact</h3>
+    <div class="resume-sidebar-content">
+      {{ with .email }}
+      <div style="margin-bottom: 0.75rem;">
+        <strong>Email:</strong><br>
+        <a href="mailto:{{ . }}">{{ . }}</a>
+      </div>
+      {{ end }}
+      {{ with .website }}
+      <div style="margin-bottom: 0.75rem;">
+        <strong>Website:</strong><br>
+        <a href="{{ . }}" target="_blank">{{ . }}</a>
+      </div>
+      {{ end }}
+      {{ with .linkedin }}
+      <div style="margin-bottom: 0.75rem;">
+        <strong>LinkedIn:</strong><br>
+        <a href="{{ . }}" target="_blank">{{ . }}</a>
+      </div>
+      {{ end }}
+      {{ with .github }}
+      <div>
+        <strong>GitHub:</strong><br>
+        <a href="{{ . }}" target="_blank">{{ . }}</a>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+  {{ end }}
+
+  {{ with .Params.summary }}
+  <div class="resume-sidebar-section">
+    <h3>Summary</h3>
+    <div class="resume-sidebar-content">
+      <p style="margin: 0;">{{ . }}</p>
+    </div>
+  </div>
+  {{ end }}
+
+  {{ with .Params.skills }}
+  <div class="resume-sidebar-section">
+    <h3>Top Skills</h3>
+    <div class="resume-sidebar-content">
+      <ul>
+        {{ range . }}
+        <li>• {{ . }}</li>
+        {{ end }}
+      </ul>
+    </div>
+  </div>
+  {{ end }}
+
+  {{ with .Params.languages }}
+  <div class="resume-sidebar-section">
+    <h3>Languages</h3>
+    <div class="resume-sidebar-content">
+      <ul>
+        {{ range . }}
+        <li><strong>{{ .name }}:</strong> {{ .level }}</li>
+        {{ end }}
+      </ul>
+    </div>
+  </div>
+  {{ end }}
+
+  {{ with .Params.certifications }}
+  <div class="resume-sidebar-section">
+    <h3>Certifications</h3>
+    <div class="resume-sidebar-content">
+      <ul>
+        {{ range . }}
+        <li>• {{ . }}</li>
+        {{ end }}
+      </ul>
+    </div>
+  </div>
+  {{ end }}
+
+</aside>

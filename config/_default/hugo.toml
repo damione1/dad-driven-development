@@ -63,3 +63,27 @@ enableEmoji = false
     precision = 0
   [minify.tdewolff.xml]
     keepWhitespace = false
+
+# Configuration du cache pour rebuilds rapides
+[caches]
+  [caches.images]
+    dir = ":resourceDir/_gen"
+    maxAge = -1  # Ne jamais expirer
+
+  [caches.assets]
+    dir = ":resourceDir/_gen"
+    maxAge = -1
+
+  [caches.getJSON]
+    dir = ":cacheDir/:project"
+    maxAge = "1h"
+
+  [caches.getCSV]
+    dir = ":cacheDir/:project"
+    maxAge = "1h"
+
+# Optimisation du processus de build
+[build]
+  writeStats = false
+  noJSConfigInAssets = true
+  useResourceCacheWhen = "always"
