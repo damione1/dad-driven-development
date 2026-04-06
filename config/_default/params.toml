@@ -14,7 +14,7 @@ description = "Damien GOEHRIG - Backend Software Engineer (Go) with 10+ years of
   layout = "profile"
   homepageImage = "img/profile.jpg"
   showRecent = true
-  showRecentItems = 5
+  showRecentItems = 6
   cardView = true
 
 [article]

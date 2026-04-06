@@ -1,0 +1,8 @@
+{{- if .IsTranslated }}
+  {{- range .AllTranslations }}
+  <link rel="alternate" hreflang="{{ .Language.LanguageCode }}" href="{{ .Permalink }}" />
+  {{- end }}
+  {{- range where .AllTranslations "Language.Lang" "en" }}
+  <link rel="alternate" hreflang="x-default" href="{{ .Permalink }}" />
+  {{- end }}
+{{- end }}
