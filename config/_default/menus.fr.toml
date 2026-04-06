@@ -28,7 +28,7 @@
 [[main]]
   parent = "projects"
   name = "Thread Art"
-  url = "https://github.com/damione1/thread-art"
+  url = "https://github.com/damione1/thread-art-generator"
   weight = 2
   newTab = true
 
@@ -42,7 +42,7 @@
 [[main]]
   parent = "projects"
   name = "Planning Poker"
-  url = "https://github.com/damione1/planning-poker-app"
+  url = "https://github.com/damione1/planning-poker"
   weight = 4
   newTab = true
 
