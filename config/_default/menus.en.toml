@@ -13,6 +13,38 @@
   url = "/blog/"
   weight = 30
 
+[[main]]
+  identifier = "projects"
+  name = "Projects"
+  weight = 40
+
+[[main]]
+  parent = "projects"
+  name = "dbt-guard"
+  url = "https://github.com/damione1/dbt-guard"
+  weight = 1
+  newTab = true
+
+[[main]]
+  parent = "projects"
+  name = "Thread Art"
+  url = "https://github.com/damione1/thread-art"
+  weight = 2
+  newTab = true
+
+[[main]]
+  parent = "projects"
+  name = "Messages"
+  url = "https://github.com/damione1/messages"
+  weight = 3
+  newTab = true
+
+[[main]]
+  parent = "projects"
+  name = "Planning Poker"
+  url = "https://github.com/damione1/planning-poker-app"
+  weight = 4
+  newTab = true
 
 [[main]]
   identifier = "linkedin"
