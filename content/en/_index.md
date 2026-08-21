@@ -1,9 +1,13 @@
 ---
 title: "Damien GOEHRIG"
 translationKey: "home"
-description: "Data Engineer with 10+ years of software development experience, specializing in ETL pipeline architecture, analytics platform modernization, and MLOps. Building scalable data infrastructure with a strong foundation in Go and PHP."
+description: "Lead Data & AI Engineer. I own the data and AI platform of a consumer lending business, from ingestion to AI systems that make real decisions in production. Snowflake, dbt, Python/FastAPI, Terraform."
 ---
 
 # About Me
 
-Data engineer with 10+ years of software development experience, now specializing in ETL pipeline architecture, analytics platform modernization, and MLOps. Expertise in transforming manual processes into automated, production-grade data solutions with a strong technical foundation in distributed systems.
+I own the data and AI platform of a consumer lending business: from ingestion to AI systems that make real decisions in production. I set the technical direction, build the platform, and ship the AI products on top of it.
+
+That means an underwriting decision engine running on Snowpark Container Services with every decision replayable for audit, the MLOps lifecycle around it, a document AI pipeline on Snowflake Cortex with a human validation loop, and the platform underneath: near-real-time CDC into Snowflake, dbt on Dynamic Tables, CI/CD, and infrastructure fully in Terraform.
+
+Before data, 10+ years of full-stack engineering (Go, PHP/Symfony, React). That background is why the platform work stays grounded in production reality rather than in diagrams.

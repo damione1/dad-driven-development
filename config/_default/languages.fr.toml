@@ -14,8 +14,8 @@ title = "Damien GOEHRIG"
 [params.author]
   name = "Damien GOEHRIG"
   image = "img/profile.jpg"
-  headline = "Ingénieur de données"
-  bio = "10+ ans en développement logiciel, maintenant spécialisé en pipelines ETL, modernisation de plateformes d'analytique et MLOps."
+  headline = "Lead Data & IA"
+  bio = "Je construis la plateforme data et les systèmes d'IA qui décident dessus. Snowflake, dbt, Python/FastAPI, Terraform. 10+ ans de développement full-stack en dessous."
   links = [
     { github = "https://github.com/damione1/" },
     { linkedin = "https://www.linkedin.com/in/damiengoehrig/" },

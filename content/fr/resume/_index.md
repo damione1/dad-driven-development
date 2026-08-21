@@ -1,7 +1,7 @@
 ---
 title: "Damien GOEHRIG"
 translationKey: "resume"
-tagline: "Ingénieur de données & Développeur logiciel | ETL · Analytique · MLOps"
+tagline: "Lead Data & IA | Snowflake · dbt · IA en production"
 location: "Montréal, QC, Canada"
 
 # Sidebar content
@@ -11,21 +11,21 @@ contact:
   linkedin: "https://www.linkedin.com/in/damiengoehrig"
   github: "https://github.com/Damione1"
 
-summary: "Ingénieur de données avec plus de 10 ans d'expérience en développement logiciel en Go et PHP, spécialisé maintenant dans l'architecture de pipelines ETL, la modernisation de plateformes analytiques et le MLOps. Solide expertise technique dans la construction d'infrastructures de données évolutives et de systèmes distribués. Expert dans la transformation de processus manuels en solutions de données automatisées et prêtes pour la production."
+summary: "Je porte la plateforme data et IA d'une entreprise de prêt à la consommation, de l'ingestion jusqu'aux systèmes d'IA qui décident en production. Je définis la direction technique, je construis la plateforme et je livre les produits IA qui tournent dessus. Le tout appuyé sur plus de 10 ans de développement full-stack (Go, PHP/Symfony, React), qui garde le travail de plateforme ancré dans la réalité de la production."
 
 skills:
-  - "Snowflake"
-  - "Data Build Tool (DBT)"
-  - "Pipelines ETL/ELT"
-  - "Go"
-  - "PHP/Symfony"
-  - "SQL (PostgreSQL, MySQL, BigQuery)"
+  - "Snowflake (SPCS, Cortex, Dynamic Tables)"
+  - "dbt"
+  - "Python / FastAPI"
+  - "MLOps & cycle de vie des modèles"
+  - "IA appliquée / pipelines LLM"
+  - "CDC & pipelines ELT"
+  - "Terraform & CI/CD"
   - "AWS & GCP"
-  - "Terraform"
-  - "MLOps"
+  - "SQL (PostgreSQL, MySQL, BigQuery)"
+  - "Gouvernance des données (Loi 25)"
+  - "Go, PHP/Symfony"
   - "React/Next.js"
-  - "gRPC & REST APIs"
-  - "Redis & Docker"
 
 languages:
   - name: "Français"
@@ -42,18 +42,31 @@ certifications:
 
 ### Groupe Alesco
 
-#### Ingénieur principal données & IA | Pipelines ETL · MLOps | Plateforme analytique
+#### Lead Data & IA | Snowflake · MLOps · IA appliquée
 
 _Octobre 2025 - Présent | Saint-Hubert, Québec_
 
-Modernisation et industrialisation de l'infrastructure de données pour supporter les initiatives d'analytique et d'intelligence artificielle. Transformation des processus manuels en pipelines automatisés et implémentation d'une plateforme analytique accessible et performante.
+Je porte la plateforme data et IA d'une entreprise de prêt à la consommation : de l'ingestion jusqu'aux systèmes d'IA qui décident en production. Je définis la direction technique, je construis la plateforme et je livre les produits IA qui tournent dessus.
 
-**Expertise technique :**
+**L'IA en production :**
 
-- Architecture et automatisation de pipelines de données (ETL/ELT)
-- Implémentation et optimisation de plateforme analytique (Snowflake)
-- Opérationnalisation de modèles de machine learning et d'IA générative
-- Démocratisation de l'accès aux données pour les équipes d'affaires et d'analytique
+- Moteur de décision d'octroi (FastAPI sur Snowpark Container Services) : API asynchrone, modèles versionnés et interchangeables à chaud, chaque décision rejouable pour l'audit. De la spec à la production en six semaines.
+- Le cycle de vie MLOps autour : registre de modèles, versions épinglées, outillage de promotion et de rollback, tests avant toute mise en production.
+- Pipeline de traitement documentaire par IA sur Snowflake Cortex, avec une boucle de validation humaine qui alimente le few-shot : le travail manuel décroît de lui-même.
+
+**La plateforme en dessous :**
+
+- CDC quasi temps réel de la base opérationnelle vers Snowflake, dbt sur Dynamic Tables, CI/CD, infrastructure entièrement en Terraform.
+- Reconstruction du reporting métier historique dans Snowflake : rétro-ingénierie de KPI qui n'existent que dans des Excels et des PDF, puis mise en pipelines gouvernés et en couche sémantique interrogée par les outils BI.
+- Partage de données sécurisé avec des partenaires externes et des investisseurs.
+- Gouvernance des accès et de la vie privée (Loi 25).
+
+**Leadership :**
+
+- Roadmap et architecture de l'équipe Data & IA, arbitrage technique avec les équipes produit et développement.
+- Accompagnement interne sur deux fronts : l'usage efficace des outils d'IA (Copilot 365, Claude Code) et l'autonomie sur Snowflake, pour que chacun trouve ses réponses sans passer par une file de demandes.
+
+**Stack :** Snowflake (SPCS, Cortex, Dynamic Tables), dbt, Python/FastAPI, AWS, Terraform.
 
 #### Développeur logiciel Full Stack | PHP/Symfony · AWS | Solutions financières
 

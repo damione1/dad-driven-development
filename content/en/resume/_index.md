@@ -1,7 +1,7 @@
 ---
 title: "Damien GOEHRIG"
 translationKey: "resume"
-tagline: "Data Engineer & Software Developer | ETL · Analytics · MLOps"
+tagline: "Lead Data & AI Engineer | Snowflake · dbt · AI Systems in Production"
 location: "Montreal, QC, Canada"
 
 # Sidebar content
@@ -11,21 +11,21 @@ contact:
   linkedin: "https://www.linkedin.com/in/damiengoehrig"
   github: "https://github.com/Damione1"
 
-summary: "Data engineer with 10+ years of software development experience in Go and PHP, now specializing in ETL pipeline architecture, analytics platform modernization, and MLOps. Strong technical foundation in building scalable data infrastructure and distributed systems. Expertise in transforming manual processes into automated, production-grade data solutions."
+summary: "I own the data and AI platform of a consumer lending business, from ingestion to AI systems that make real decisions in production. I set the technical direction, build the platform, and ship the AI products running on top of it. Backed by 10+ years of full-stack engineering (Go, PHP/Symfony, React) that keeps the platform work grounded in production reality."
 
 skills:
-  - "Snowflake"
-  - "Data Build Tool (DBT)"
-  - "ETL/ELT Pipelines"
-  - "Go"
-  - "PHP/Symfony"
-  - "SQL (PostgreSQL, MySQL, BigQuery)"
+  - "Snowflake (SPCS, Cortex, Dynamic Tables)"
+  - "dbt"
+  - "Python / FastAPI"
+  - "MLOps & Model Lifecycle"
+  - "Applied AI / LLM Pipelines"
+  - "CDC & ELT Pipelines"
+  - "Terraform & CI/CD"
   - "AWS & GCP"
-  - "Terraform"
-  - "MLOps"
+  - "SQL (PostgreSQL, MySQL, BigQuery)"
+  - "Data Governance (Law 25)"
+  - "Go, PHP/Symfony"
   - "React/Next.js"
-  - "gRPC & REST APIs"
-  - "Redis & Docker"
 
 languages:
   - name: "Français"
@@ -42,18 +42,31 @@ certifications:
 
 ### Groupe Alesco
 
-#### Lead Data & AI Engineer | ETL Pipelines · MLOps | Analytics Platform
+#### Lead Data & AI Engineer | Snowflake · MLOps · Applied AI
 
 _October 2025 - Present | Saint-Hubert, Quebec_
 
-Modernization and industrialization of data infrastructure to support analytics and artificial intelligence initiatives. Transformation of manual processes into automated pipelines and implementation of an accessible, high-performance analytics platform.
+I own the data and AI platform of a consumer lending business: from ingestion to AI systems that make real decisions in production. I set the technical direction, build the platform, and ship the AI products on top of it.
 
-**Technical Expertise::**
+**AI in production:**
 
-- Data pipeline architecture and automation (ETL/ELT)
-- Analytics platform implementation and optimization (Snowflake)
-- Machine learning and generative AI model operationalization
-- Democratization of data access for business and analytics teams
+- Underwriting decision engine (FastAPI on Snowpark Container Services): async API, versioned and hot-swappable decision models, every decision replayable for audit. Spec to production in six weeks.
+- The MLOps lifecycle around it: model registry, pinned versions, promote and rollback tooling, tests before any model reaches production.
+- Document AI pipeline on Snowflake Cortex, with a human validation loop that feeds few-shot learning, so the manual workload shrinks over time.
+
+**The platform underneath:**
+
+- Near-real-time CDC from the operational database to Snowflake, dbt on Dynamic Tables, CI/CD, infrastructure fully in Terraform.
+- Rebuilding legacy business reporting in Snowflake: reverse-engineering KPI definitions that only exist in spreadsheets and PDFs, then turning them into governed pipelines and a semantic layer that BI tools query directly.
+- Secure data sharing with external partners and investors.
+- Privacy and access governance under Quebec's Law 25.
+
+**Leadership:**
+
+- Roadmap and architecture for the Data & AI team, technical arbitration with the product and engineering teams.
+- Internal enablement on two fronts: using AI tools well (Copilot 365, Claude Code), and getting answers out of Snowflake directly instead of waiting on a request queue.
+
+**Stack:** Snowflake (SPCS, Cortex, Dynamic Tables), dbt, Python/FastAPI, AWS, Terraform.
 
 #### Full Stack Software Engineer | PHP/Symfony · AWS | Financial Solutions
 
