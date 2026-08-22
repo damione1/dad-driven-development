@@ -1,13 +1,13 @@
 ---
 title: "Damien GOEHRIG"
 translationKey: "home"
-description: "Lead Data & AI Engineer. I own the data and AI platform of a consumer lending business, from ingestion to AI systems that make real decisions in production. Snowflake, dbt, Python/FastAPI, Terraform."
+description: "Damien Goehrig, data and AI engineer in Montreal. Snowflake, dbt, Python, and AI systems that run in production. Ten years of full-stack development before that."
 ---
 
 # About Me
 
-I own the data and AI platform of a consumer lending business: from ingestion to AI systems that make real decisions in production. I set the technical direction, build the platform, and ship the AI products on top of it.
+I work on data and AI platforms. These days that means a lot of Snowflake, dbt and Python, and building AI systems that end up making real decisions in production rather than staying in a notebook.
 
-That means an underwriting decision engine running on Snowpark Container Services with every decision replayable for audit, the MLOps lifecycle around it, a document AI pipeline on Snowflake Cortex with a human validation loop, and the platform underneath: near-real-time CDC into Snowflake, dbt on Dynamic Tables, CI/CD, and infrastructure fully in Terraform.
+Before that, about ten years of full-stack development, mostly Go and PHP. It's probably why I care about the unglamorous parts: what breaks at 3am, what a colleague will have to maintain after me, and whether the thing actually works outside the demo.
 
-Before data, 10+ years of full-stack engineering (Go, PHP/Symfony, React). That background is why the platform work stays grounded in production reality rather than in diagrams.
+Outside work there's a homelab that got out of hand, a CNC I'm slowly learning to use, and a few side projects in Rust. Some of it ends up on this blog.

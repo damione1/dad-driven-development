@@ -1,13 +1,13 @@
 ---
 title: "Damien GOEHRIG"
 translationKey: "home"
-description: "Lead Data & IA. Je porte la plateforme data et IA d'une entreprise de prêt à la consommation, de l'ingestion jusqu'aux systèmes d'IA qui décident en production. Snowflake, dbt, Python/FastAPI, Terraform."
+description: "Damien Goehrig, ingénieur data et IA à Montréal. Snowflake, dbt, Python, et des systèmes d'IA qui tournent en production. Une dizaine d'années de développement full-stack avant ça."
 ---
 
 # À propos
 
-Je porte la plateforme data et IA d'une entreprise de prêt à la consommation : de l'ingestion jusqu'aux systèmes d'IA qui décident en production. Je définis la direction technique, je construis la plateforme et je livre les produits IA qui tournent dessus.
+Je travaille sur des plateformes data et IA. En ce moment, ça veut dire beaucoup de Snowflake, de dbt et de Python, et des systèmes d'IA qui finissent par décider pour de vrai en production plutôt que de rester dans un notebook.
 
-Concrètement : un moteur de décision d'octroi sur Snowpark Container Services, où chaque décision est rejouable pour l'audit, le cycle de vie MLOps autour, un pipeline de traitement documentaire par IA sur Snowflake Cortex avec boucle de validation humaine, et la plateforme en dessous : CDC quasi temps réel vers Snowflake, dbt sur Dynamic Tables, CI/CD, infrastructure entièrement en Terraform.
+Avant ça, une dizaine d'années de développement full-stack, surtout en Go et en PHP. C'est sans doute pour ça que je m'intéresse aux parties ingrates : ce qui casse à 3h du matin, ce qu'un collègue devra maintenir après moi, et si le truc marche vraiment en dehors de la démo.
 
-Avant la data, plus de 10 ans de développement full-stack (Go, PHP/Symfony, React). C'est ce passé qui garde le travail de plateforme ancré dans la réalité de la production plutôt que dans les diagrammes.
+En dehors du travail, il y a un homelab qui a pris trop de place, une CNC que j'apprends doucement à utiliser, et quelques projets en Rust. Une partie finit sur ce blog.
