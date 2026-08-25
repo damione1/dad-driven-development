@@ -5,6 +5,7 @@ draft: false
 description: "Building dbt-guard, an offline static analysis tool that detects breaking changes in a dbt DAG by comparing two manifests - no Snowflake connection required."
 tags: ["dbt", "Python", "Data Engineering", "Open Source"]
 categories: ["Data Engineering", "Open Source"]
+images: ["dbt-guard-package-python-featured.jpg"]
 ---
 
 Publishing a package on PyPI. It's one of those things that looks intimidating from the outside, but turns out to be a matter of good timing and a precise enough problem to solve.

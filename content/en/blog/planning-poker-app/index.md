@@ -5,7 +5,7 @@ draft: false
 description: "Building a real-time Planning Poker app with Go, PocketBase, htmx, and WebSockets - and maybe going a bit overboard with the deployment infrastructure."
 tags: ["Go", "PocketBase", "htmx", "WebSockets", "DevOps", "Terraform", "AWS"]
 categories: ["Development", "Backend"]
-images: ["planning-poker-featured.jpg"]
+images: ["planning-poker-app-featured.jpg"]
 ---
 
 So I built this Planning Poker app. You know, that agile estimation thing where teams gather around and vote on story points? Yeah, I decided to make it web-based and real-time [pokerplanning.net](https://pokerplanning.net/). And then... well, let's just say I got a little ambitious with the deployment setup.

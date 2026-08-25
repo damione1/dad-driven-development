@@ -15,6 +15,7 @@ tags:
     "Claude Code",
   ]
 categories: ["DevOps"]
+images: ["encrypted-backup-cloudflare-r2-featured.jpg"]
 ---
 
 Je suis parti de la maison pour la journée. En milieu de matinée, mon téléphone se met à vibrer sans s'arrêter. Une cinquantaine de notifications Uptime Kuma, d'un coup.

@@ -6,7 +6,7 @@ translationKey: "souffle"
 description: "How wanting to dictate my prompts turned into a fully local macOS transcription app in Rust and Tauri, built on the Kyutai STT model, with Me/Them diarization and an MCP server."
 tags: ["Rust", "Tauri", "Kyutai", "STT", "Open Source", "macOS", "LLM"]
 categories: ["Development", "AI", "Open Source"]
-images: ["souffle-featured.png"]
+images: ["souffle-local-transcription-macos-featured.jpg", "souffle-featured.png"]
 ---
 
 I originally just wanted an app that transcribes what I say and pastes the text wherever my cursor is. That's it. Not a product, not an open source project, just a tool I figured I'd find in ten minutes of searching.

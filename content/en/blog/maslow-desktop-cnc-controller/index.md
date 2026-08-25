@@ -6,7 +6,7 @@ translationKey: "maslow-desktop"
 description: "How a CNC that sat in its box for eighteen months pushed me to write a desktop client for the Maslow 4: a state machine extracted from the firmware, a guided calibration wizard, and an MCP server while I was at it."
 tags: ["Rust", "Tauri", "CNC", "Open Source", "MCP", "LLM"]
 categories: ["Development", "Open Source"]
-images: ["maslow-run-toolpath.png"]
+images: ["maslow-desktop-cnc-controller-featured.jpg", "maslow-run-toolpath.png"]
 ---
 
 I backed the [Maslow 4](https://www.maslowcnc.com/) Kickstarter. I received it, assembled it, and then it sat in its box for eighteen months.

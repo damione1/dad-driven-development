@@ -5,7 +5,7 @@ draft: false
 description: "Construire une application Planning Poker temps réel avec Go, PocketBase, htmx et WebSockets - et peut-être aller un peu trop loin avec l'infrastructure de déploiement."
 tags: ["Go", "PocketBase", "htmx", "WebSockets", "DevOps", "Terraform", "AWS"]
 categories: ["Développement", "Backend"]
-images: ["planning-poker-featured.jpg"]
+images: ["planning-poker-app-featured.jpg"]
 ---
 
 Fait que j'ai construit cette app de Planning Poker. Tu sais, le truc agile d'estimation où l'équipe se rassemble pour voter sur les story points ? Ouais, j'ai décidé de la faire web et temps réel [pokerplanning.net](https://pokerplanning.net/). Et puis... disons juste que je suis devenu un peu ambitieux avec le déploiement.

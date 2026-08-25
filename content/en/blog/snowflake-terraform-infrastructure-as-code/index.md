@@ -5,6 +5,7 @@ draft: false
 description: "How to move from SQL scripts and migrations to Snowflake infrastructure managed with Terraform - layered roles, future grants, masking and reproducibility."
 tags: ["Snowflake", "Terraform", "Data Engineering", "Infrastructure as Code"]
 categories: ["Data Engineering", "Infrastructure"]
+images: ["snowflake-terraform-infrastructure-as-code-featured.jpg"]
 ---
 
 There's a moment in every data engineer's life when you find yourself staring at a 300-line SQL file that creates roles, grants, warehouses, and you wonder how you got here. This is my story.

@@ -5,6 +5,7 @@ draft: false
 description: "dbt applies the same rigor to your data pipelines that Terraform applies to infrastructure - declarative approach, DAG, Dynamic Tables, manifest and comparison with SQLMesh."
 tags: ["dbt", "Snowflake", "Data Engineering", "SQL"]
 categories: ["Data Engineering"]
+images: ["dbt-data-infrastructure-as-code-featured.jpg"]
 ---
 
 Snowflake is fundamentally SQL-first. That's its strength: everything is driven by SQL, from grants to object creation to transformations. Infrastructure, we've seen how to tame it with Terraform in [the previous article]({{< ref "/blog/snowflake-terraform-infrastructure-as-code/" >}}). But data transformations fall into a blind spot. SQL scripts scattered everywhere, no tests, no serious versioning, one colleague who knows what order to run things in.

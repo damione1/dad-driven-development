@@ -7,6 +7,7 @@ description: "Fifty Uptime Kuma notifications, a dying SSD, a remote Claude sess
 tags:
   ["Homelab", "Unraid", "Backup", "Cloudflare R2", "restic", "DevOps", "Claude Code"]
 categories: ["DevOps"]
+images: ["encrypted-backup-cloudflare-r2-featured.jpg"]
 ---
 
 I left the house for the day. Mid-morning, my phone starts buzzing and doesn't stop. About fifty Uptime Kuma notifications, all at once.

@@ -6,6 +6,7 @@ translationKey: "homelab-ssh"
 description: "Why I let Claude Code operate my Unraid homelab over SSH: I know the devops concepts, I just don't have its speed. And how Ansible ended up reducing the need for remote operations."
 tags: ["LLM", "Homelab", "Unraid", "DevOps", "SSH", "Ansible", "Claude Code"]
 categories: ["DevOps", "AI"]
+images: ["llm-ssh-homelab-unraid-featured.jpg"]
 ---
 
 I have an Unraid server running about forty Docker containers, a few compose stacks, two AMD GPUs, VMs, Zigbee, media, home automation. In short, the typical homelab of someone who accumulated too much over the years. And I gave root SSH access to an LLM.

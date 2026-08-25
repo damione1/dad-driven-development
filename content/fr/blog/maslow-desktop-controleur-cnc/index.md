@@ -6,7 +6,7 @@ translationKey: "maslow-desktop"
 description: "Comment une CNC restée un an et demi dans son carton m'a poussé à écrire un client desktop pour la Maslow 4 : une machine à états extraite du firmware, un assistant de calibration, et un serveur MCP tant qu'à faire."
 tags: ["Rust", "Tauri", "CNC", "Open Source", "MCP", "LLM"]
 categories: ["Développement", "Open Source"]
-images: ["maslow-run-toolpath.png"]
+images: ["maslow-desktop-cnc-controller-featured.jpg", "maslow-run-toolpath.png"]
 ---
 
 J'ai participé au Kickstarter de la [Maslow 4](https://www.maslowcnc.com/). Je l'ai reçue, je l'ai montée, et elle est restée dans son carton pendant un an et demi.

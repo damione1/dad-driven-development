@@ -5,6 +5,7 @@ draft: false
 description: "A multi-agent approach to automatically generate dbt source YAML documentation - what LLMs discover, their limits, and the complete workflow."
 tags: ["dbt", "LLM", "Data Engineering", "AI"]
 categories: ["Data Engineering", "AI"]
+images: ["dbt-document-sources-llm-multi-agent-featured.jpg"]
 ---
 
 Documenting columns in a source database is the kind of task nobody wants to do. You have an operational system with hundreds of tables, thousands of columns, and documentation ranging from "nonexistent" to "a 2017 comment that says `TODO: document this`."

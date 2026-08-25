@@ -5,6 +5,7 @@ draft: false
 description: "Declarative tests in dbt - from the four native tests to advanced tests, with concrete examples of problems caught before production."
 tags: ["dbt", "Data Quality", "Data Engineering", "Testing"]
 categories: ["Data Engineering", "Data Quality"]
+images: ["dbt-tests-constraints-yml-featured.jpg"]
 ---
 
 You know the feeling: a report spitting out weird numbers, an analyst telling you "the totals don't match," and you spend your day tracing back up the chain to find where the data went wrong. Often, the problem could have been detected automatically if someone had put a test somewhere.

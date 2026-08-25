@@ -5,6 +5,7 @@ draft: false
 description: "Comment passer des scripts SQL et migrations à une infrastructure Snowflake gérée avec Terraform - rôles en couches, future grants, masquage et reproductibilité."
 tags: ["Snowflake", "Terraform", "Data Engineering", "Infrastructure as Code"]
 categories: ["Data Engineering", "Infrastructure"]
+images: ["snowflake-terraform-infrastructure-as-code-featured.jpg"]
 ---
 
 Il y a un moment, dans la vie d'un data engineer, où tu te retrouves avec un fichier SQL de 300 lignes qui crée des rôles, des grants, des warehouses, et tu te demandes comment t'en es arrivé là. C'est mon histoire.

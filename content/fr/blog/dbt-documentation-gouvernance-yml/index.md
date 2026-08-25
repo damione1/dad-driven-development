@@ -5,6 +5,7 @@ draft: false
 description: "Transformer les YAML dbt d'une formalité optionnelle en source de vérité pour la gouvernance - classifications PII, persist_docs, masquage automatique et enforcement en CI."
 tags: ["dbt", "Snowflake", "Data Governance", "Data Engineering"]
 categories: ["Data Engineering", "Data Governance"]
+images: ["dbt-documentation-governance-yml-featured.jpg"]
 ---
 
 La documentation, c'est le truc que personne ne veut faire. Surtout en data. T'as des centaines de colonnes dans des dizaines de tables, et quelqu'un te demande "c'est quoi le champ `status` dans la table `orders` ?" Et la réponse honnête, c'est souvent "euh... un enum je pense qui veut probablement dire X."
