@@ -1,9 +1,32 @@
 {{ if hugo.IsProduction }}
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-NLSWSR28NP"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-NLSWSR28NP');
-</script>
+  <!-- Cloudflare Web Analytics -->
+  <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "38a47ec437e94349a869fda9ab523b1a"}'></script>
+  <!-- End Cloudflare Web Analytics -->
+  {{/* GA4 differe : le tag pese 161 Ko et generait les deux seules longues
+       taches du thread principal. On enfile les commandes dans dataLayer tout
+       de suite (gtag.js les rejoue au chargement) et on ne telecharge la
+       librairie qu'a la premiere interaction, ou 3 s apres l'evenement load. */}}
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-NLSWSR28NP');
+    (function () {
+      var done = false;
+      function load() {
+        if (done) return;
+        done = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-NLSWSR28NP';
+        document.head.appendChild(s);
+      }
+      ['pointerdown', 'keydown', 'scroll'].forEach(function (evt) {
+        addEventListener(evt, load, { once: true, passive: true });
+      });
+      function arm() { setTimeout(load, 3000); }
+      if (document.readyState === 'complete') arm();
+      else addEventListener('load', arm, { once: true });
+    })();
+  </script>
 {{ end }}
