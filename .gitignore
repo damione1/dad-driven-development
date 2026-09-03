@@ -46,6 +46,7 @@ web/static/js/alpine.min.js
 /assets/jsconfig.json
 hugo_stats.json
 /_vendor/
+.wrangler/
 
 # Old project files
 /old/

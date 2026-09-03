@@ -1,7 +1,9 @@
 {{ if hugo.IsProduction }}
+  {{ with site.Params.cloudflareAnalyticsToken }}
   <!-- Cloudflare Web Analytics -->
-  <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "38a47ec437e94349a869fda9ab523b1a"}'></script>
+  <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "{{ . }}"}'></script>
   <!-- End Cloudflare Web Analytics -->
+  {{ end }}
   {{/* GA4 differe : le tag pese 161 Ko et generait les deux seules longues
        taches du thread principal. On enfile les commandes dans dataLayer tout
        de suite (gtag.js les rejoue au chargement) et on ne telecharge la
