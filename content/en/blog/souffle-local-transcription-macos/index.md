@@ -195,7 +195,7 @@ Four models are available, downloaded on first use: both Kyutai models (1B bilin
 
 ---
 
-Soufflé is on [GitHub](https://github.com/damione1/souffle), under the GPL-3.0 license. It runs on Apple Silicon Macs, macOS 13 or newer:
+Soufflé lives at [usesouffle.app](https://usesouffle.app), and the source is on [GitHub](https://github.com/damione1/souffle) under the GPL-3.0 license. It runs on Apple Silicon Macs, macOS 13 or newer:
 
 ```bash
 brew install --cask damione1/tap/souffle

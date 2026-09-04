@@ -28,7 +28,7 @@
 [[main]]
   parent = "projects"
   name = "Soufflé"
-  url = "https://github.com/damione1/souffle"
+  url = "https://usesouffle.app/fr/"
   weight = 2
   newTab = true
 

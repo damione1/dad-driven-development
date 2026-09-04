@@ -1,6 +1,6 @@
 ---
 title: "Blog"
-description: "Articles and thoughts on software development, Go, and distributed systems"
+description: "Articles on data and AI engineering: dbt, Snowflake, Python, and AI systems in production. Plus side projects in Go and Rust."
 translationKey: "blog"
 cardView: true
 groupByYear: true

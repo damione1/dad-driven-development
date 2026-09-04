@@ -195,7 +195,7 @@ Quatre modèles sont disponibles, téléchargés à la première utilisation : l
 
 ---
 
-Soufflé est sur [GitHub](https://github.com/damione1/souffle), sous licence GPL-3.0. Il tourne sur Mac Apple Silicon, macOS 13 minimum :
+Soufflé est sur [usesouffle.app](https://usesouffle.app/fr/), et le code source sur [GitHub](https://github.com/damione1/souffle) sous licence GPL-3.0. Il tourne sur Mac Apple Silicon, macOS 13 minimum :
 
 ```bash
 brew install --cask damione1/tap/souffle
