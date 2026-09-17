@@ -1,7 +1,7 @@
 ---
 title: "Closer to the Machine: Getting Obsessed With Strict Types"
 date: 2026-09-17
-draft: true
+draft: false
 translationKey: "strict-types"
 description: "2026, we barely write the code anymore: not a reason to drop the rigor. You tell the AI the what and the how. My how is strict types: the set lives in the type, the compiler yells, the contract crosses machines."
 tags: ["Rust", "Go", "Types", "Protobuf", "gRPC", "Software Design"]

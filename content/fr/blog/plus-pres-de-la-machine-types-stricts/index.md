@@ -1,7 +1,7 @@
 ---
 title: "Plus près de la machine : une obsession pour les types stricts"
 date: 2026-09-17
-draft: true
+draft: false
 translationKey: "strict-types"
 description: "2026, on code presque plus : ce n'est pas une raison de lâcher la rigueur. On dicte le quoi et le comment à l'IA. Mon comment, c'est les types stricts : un set dans le type, un compilateur qui crie, un contrat qui traverse les machines."
 tags: ["Rust", "Go", "Types", "Protobuf", "gRPC", "Software Design"]
