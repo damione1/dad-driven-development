@@ -203,6 +203,22 @@ the frame: sound on the left, structured transcript on the right. Warm cream and
 charcoal background, soft warm glow behind the waveform.
 ```
 
+## 12. J'ai laissé Claude négocier mon renouvellement SiriusXM
+
+`content/en/.../siriusxm-negotiation-claude/` · `content/fr/.../siriusxm-negociation-claude/`
+Accent : **vert `#4ade80` + rouge `#f87171`**
+
+```
+A staircase of three floating rectangular price tags descending from upper left to lower right,
+each step shorter than the last. The first two tags are struck through with a jagged red crack
+and drifting slightly apart, going dark. The third and lowest tag is intact, glowing calm green.
+Above the staircase, two small identical geometric cores face each other across a thin dashed
+line, like two equally matched presences across a negotiation, neither larger than the other.
+A faint chat-bubble outline is barely visible behind the lowest tag. Off-white line work,
+near-black background, soft green glow around the final tag, faint red glow around the broken
+ones.
+```
+
 ---
 
 ## Intégration dans Hugo
@@ -244,6 +260,7 @@ et il sert aussi d'`og:image` au partage.
 | 9 | `maslow-desktop-cnc-controller` | `maslow-desktop-controleur-cnc` |
 | 10 | `planning-poker-app` | `planning-poker-app` |
 | 11 | `souffle-local-transcription-macos` | `souffle-transcription-locale-macos` |
+| 12 | `siriusxm-negotiation-claude` | `siriusxm-negociation-claude` |
 
 ### Deux points relevés en passant
 
