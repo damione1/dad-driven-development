@@ -61,6 +61,13 @@
   newTab = true
 
 [[main]]
+  parent = "projects"
+  name = "YotoMediaManager"
+  url = "https://yotomediamanager.damiengoehrig.ca"
+  weight = 7
+  newTab = true
+
+[[main]]
   identifier = "github"
   name = "GitHub"
   pre = "github"
