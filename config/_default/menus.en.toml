@@ -68,6 +68,13 @@
   newTab = true
 
 [[main]]
+  parent = "projects"
+  name = "Slint Kit"
+  url = "https://github.com/damione1/slint-kit"
+  weight = 8
+  newTab = true
+
+[[main]]
   identifier = "linkedin"
   name = "LinkedIn"
   pre = "linkedin"
