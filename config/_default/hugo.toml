@@ -10,7 +10,7 @@ enableGitInfo = false
 enableEmoji = false
 
 [pagination]
-  pagerSize = 10
+  pagerSize = 9
 
 [taxonomies]
   stack = "stack"

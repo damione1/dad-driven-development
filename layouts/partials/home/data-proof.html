@@ -1,17 +1,19 @@
-<section class="data-proof" aria-labelledby="data-proof-title">
-  <h2 id="data-proof-title">{{ if eq .Lang "fr" }}Data et IA en pratique{{ else }}Data and AI in practice{{ end }}</h2>
-  <ul>
+<section class="data-proof w-full" aria-labelledby="data-proof-title">
+  <h2 id="data-proof-title" class="mt-8 text-2xl font-extrabold mb-10">{{ if eq .Lang "fr" }}Data et IA en pratique{{ else }}Data and AI in practice{{ end }}</h2>
+  <div class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3">
     {{ $paths := slice "/blog/snowflake-terraform-infrastructure-as-code" "/blog/dbt-data-infrastructure-as-code" "/blog/dbt-document-sources-llm-multi-agent" }}
     {{ if eq .Lang "fr" }}
       {{ $paths = slice "/blog/snowflake-terraform-infrastructure-as-code" "/blog/dbt-data-infrastructure-as-code" "/blog/dbt-documenter-source-llm-multi-agent" }}
     {{ end }}
     {{ range $paths }}
       {{ with $.Site.GetPage . }}
-        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+        {{ partial "article-link/card.html" . }}
       {{ end }}
     {{ end }}
-  </ul>
+  </div>
   {{ with .Site.GetPage "/tags/dbt" }}
-    <a href="{{ .RelPermalink }}">{{ if eq $.Lang "fr" }}Tous les articles dbt{{ else }}All dbt articles{{ end }} &rarr;</a>
+    <div class="mt-6">
+      <a class="underline underline-offset-2" href="{{ .RelPermalink }}">{{ if eq $.Lang "fr" }}Tous les articles dbt{{ else }}All dbt articles{{ end }} &rarr;</a>
+    </div>
   {{ end }}
 </section>
