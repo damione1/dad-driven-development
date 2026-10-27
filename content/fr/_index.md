@@ -1,10 +1,11 @@
 ---
 title: "Damien GOEHRIG"
 translationKey: "home"
+seoTitle: "Damien Goehrig | Ingénieur Data & IA, Montréal"
 description: "Damien Goehrig, ingénieur data et IA à Montréal. Snowflake, dbt, Python, et des systèmes d'IA qui tournent en production. Une dizaine d'années de développement full-stack avant ça."
 ---
 
-# À propos
+## À propos
 
 Je travaille sur des plateformes data et IA. En ce moment, ça veut dire beaucoup de Snowflake, de dbt et de Python, et des systèmes d'IA qui finissent par décider pour de vrai en production plutôt que de rester dans un notebook.
 

@@ -1,0 +1,7 @@
+{{/* The homepage is a selection, not another paginated blog archive. */}}
+{{ $recent := where .Site.RegularPages "Type" "in" .Site.Params.mainSections }}
+<section class="w-full grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+  {{ range first .Site.Params.homepage.showRecentItems $recent.ByDate.Reverse }}
+    {{ partial "article-link/card.html" . }}
+  {{ end }}
+</section>

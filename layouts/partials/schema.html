@@ -1,0 +1,23 @@
+{{- $meta := partial "seo/metadata.html" . -}}
+{{- $personID := printf "%s#person" ("/" | absURL) -}}
+{{- $profile := .Site.GetPage "/resume" -}}
+{{- $person := dict "@type" "Person" "@id" $personID "name" .Site.Params.Author.name "url" $profile.Permalink "jobTitle" .Site.Params.Author.headline -}}
+{{- $sameAs := slice -}}
+{{- range .Site.Params.Author.links -}}
+  {{- range $name, $url := . -}}
+    {{- if in (slice "github" "linkedin") $name }}{{ $sameAs = $sameAs | append $url }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- $person = merge $person (dict "sameAs" $sameAs) -}}
+{{- $node := dict "@type" "WebPage" "@id" $meta.canonical "url" $meta.canonical "name" $meta.title "description" $meta.description "inLanguage" .Lang -}}
+{{- if .IsHome -}}
+  {{- $node = merge $node (dict "@type" "WebSite" "publisher" $person) -}}
+{{- else if eq .Section "resume" -}}
+  {{- $node = merge $node (dict "@type" "ProfilePage" "mainEntity" $person) -}}
+{{- else if and .IsPage (eq .Section "blog") -}}
+  {{- $node = merge $node (dict "@type" "BlogPosting" "headline" .Title "mainEntityOfPage" .Permalink "author" $person "publisher" $person "datePublished" (.PublishDate.Format "2006-01-02T15:04:05Z07:00") "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00") "wordCount" .WordCount) -}}
+{{- else if .IsNode -}}
+  {{- $node = merge $node (dict "@type" "CollectionPage") -}}
+{{- end -}}
+{{- with $meta.image }}{{ $node = merge $node (dict "image" .Permalink) }}{{ end -}}
+<script type="application/ld+json">{{ dict "@context" "https://schema.org" "@graph" (slice $node) | jsonify | safeJS }}</script>

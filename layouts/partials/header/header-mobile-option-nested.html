@@ -1,0 +1,16 @@
+<li class="mt-1">
+  {{ if .URL }}<a href="{{ .URL }}" class="flex items-center">{{ else }}<span class="flex items-center">{{ end }}
+    {{ with .Pre }}<span class="mr-1">{{ partial "icon.html" . }}</span>{{ end }}
+    <span>{{ .Name | markdownify }}</span>
+  {{ if .URL }}</a>{{ else }}</span>{{ end }}
+</li>
+{{ range .Children }}
+  <li class="mt-1">
+    <a href="{{ .URL }}"
+      {{ if or (strings.HasPrefix .URL "http:") (strings.HasPrefix .URL "https:") }}target="_blank" rel="noopener noreferrer"{{ end }}
+      class="flex items-center hover:text-primary-600 dark:hover:text-primary-400">
+      {{ with .Pre }}<span class="mr-1">{{ partial "icon.html" . }}</span>{{ end }}
+      <span class="text-sm font-small">{{ .Name | markdownify }}</span>
+    </a>
+  </li>
+{{ end }}

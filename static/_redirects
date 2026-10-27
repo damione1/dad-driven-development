@@ -1,0 +1,21 @@
+# Legacy homepage pagination now lives only under the actual blog archive.
+/page/2/ /blog/page/2/ 301
+/fr/page/2/ /fr/blog/page/2/ 301
+
+# Exact duplicate archives: GSC canonical inspection, 2026-10-27.
+/categories/open-source/ /tags/open-source/ 301
+/categories/open-source/index.xml /tags/open-source/index.xml 301
+/fr/categories/open-source/ /fr/tags/open-source/ 301
+/fr/categories/open-source/index.xml /fr/tags/open-source/index.xml 301
+/fr/categories/data-quality/ /fr/tags/data-quality/ 301
+/fr/categories/data-quality/index.xml /fr/tags/data-quality/index.xml 301
+/categories/data-engineering/ /tags/data-engineering/ 301
+/categories/data-engineering/index.xml /tags/data-engineering/index.xml 301
+/categories/data-quality/ /tags/data-quality/ 301
+/categories/data-quality/index.xml /tags/data-quality/index.xml 301
+/tags/data-governance/ /categories/data-governance/ 301
+/tags/data-governance/index.xml /categories/data-governance/index.xml 301
+/fr/categories/data-governance/ /fr/tags/data-governance/ 301
+/fr/categories/data-governance/index.xml /fr/tags/data-governance/index.xml 301
+/fr/categories/data-engineering/ /fr/tags/data-engineering/ 301
+/fr/categories/data-engineering/index.xml /fr/tags/data-engineering/index.xml 301

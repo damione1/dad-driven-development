@@ -1,6 +1,8 @@
 ---
 title: "Documenting a Source Database with Multi-Agent LLMs"
+translationKey: "dbt-document-sources"
 date: 2026-02-06
+lastmod: 2026-10-27
 draft: false
 description: "A multi-agent approach to automatically generate dbt source YAML documentation - what LLMs discover, their limits, and the complete workflow."
 tags: ["dbt", "LLM", "Data Engineering", "AI"]
@@ -49,7 +51,38 @@ The most interesting part is what the agents find that nobody knew (or had forgo
 
 ## Integration into dbt
 
-Once the YAMLs are generated and validated, they integrate directly into the dbt project as source definitions. With `persist_docs` enabled, descriptions surface in Snowflake and classification metadata feeds governance policies. This mechanism is covered in detail in [the article on YAMLs as governance]({{< ref "/blog/dbt-documentation-governance-yml/" >}}).
+Once the YAMLs are generated and validated, they integrate directly into the dbt project as source definitions and appear in the generated dbt documentation. There is an important boundary: [`persist_docs`](https://docs.getdbt.com/reference/resource-configs/persist_docs) can persist descriptions for supported resources such as models, but **it is not implemented for sources**. Adding it to a source definition will not synchronize the comments on the upstream Snowflake table.
+
+For source tables, publishing those descriptions to Snowflake requires a separate, explicit step: for example, a reviewed script or macro that reads the validated source metadata and issues Snowflake [`COMMENT`](https://docs.snowflake.com/en/sql-reference/sql/comment) statements. Classification tags and masking policies also require their own implementation; descriptions alone do not activate them. The distinction between documentation and governance automation is covered in [the article on YAMLs as governance]({{< ref "/blog/dbt-documentation-governance-yml/" >}}).
+
+### A minimal source example
+
+This illustrative YAML defines a source and a reviewed column description. Replace the identifiers with your own; the description here is an example, not a claim about a real dataset.
+
+```yaml
+version: 2
+sources:
+  - name: app
+    database: RAW
+    schema: APP
+    tables:
+      - name: ORDERS
+        description: "Orders recorded by the application."
+        columns:
+          - name: STATUS
+            description: "Order state: 0 pending, 1 approved, 2 cancelled."
+```
+
+Generate the dbt documentation as usual with `dbt docs generate` in a configured project. To publish this particular column description on an existing Snowflake source table, the corresponding SQL is separate:
+
+```sql
+COMMENT ON COLUMN "RAW"."APP"."ORDERS"."STATUS"
+  IS 'Order state: 0 pending, 1 approved, 2 cancelled.';
+
+DESCRIBE TABLE "RAW"."APP"."ORDERS";
+```
+
+The role running that statement must have the appropriate privileges on the object. Check the column comment in the `DESCRIBE TABLE` output, as well as the source page in dbt docs. A generalized script must quote identifiers and escape comment strings correctly; do not execute raw model output as SQL. These commands illustrate the boundary between the two systems and are not a complete synchronization tool.
 
 What matters here: the agents transform a tedious documentation exercise into a concrete foundation for active governance, without it being a separate project.
 
@@ -83,7 +116,7 @@ In practice:
 2. The agents produce documented YAML files, table by table
 3. A human reviews, corrects errors, adds missing business context
 4. The corrected YAMLs become the source definitions in dbt
-5. Metadata is pushed to Snowflake via [`persist_docs`](https://docs.getdbt.com/reference/resource-configs/persist_docs)
+5. For models, enable `persist_docs` where supported. For source tables, use a separate reviewed comment-synchronization step and verify the resulting Snowflake comments
 6. Classifications feed governance policies
 
 Total time? For a database with a few hundred tables: a few days of agents plus a few days of human review. Without agents, that's weeks or months of manual work that nobody wants to do.

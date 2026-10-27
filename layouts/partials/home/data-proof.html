@@ -1,0 +1,17 @@
+<section class="data-proof" aria-labelledby="data-proof-title">
+  <h2 id="data-proof-title">{{ if eq .Lang "fr" }}Data et IA en pratique{{ else }}Data and AI in practice{{ end }}</h2>
+  <ul>
+    {{ $paths := slice "/blog/snowflake-terraform-infrastructure-as-code" "/blog/dbt-data-infrastructure-as-code" "/blog/dbt-document-sources-llm-multi-agent" }}
+    {{ if eq .Lang "fr" }}
+      {{ $paths = slice "/blog/snowflake-terraform-infrastructure-as-code" "/blog/dbt-data-infrastructure-as-code" "/blog/dbt-documenter-source-llm-multi-agent" }}
+    {{ end }}
+    {{ range $paths }}
+      {{ with $.Site.GetPage . }}
+        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+      {{ end }}
+    {{ end }}
+  </ul>
+  {{ with .Site.GetPage "/tags/dbt" }}
+    <a href="{{ .RelPermalink }}">{{ if eq $.Lang "fr" }}Tous les articles dbt{{ else }}All dbt articles{{ end }} &rarr;</a>
+  {{ end }}
+</section>

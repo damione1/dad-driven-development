@@ -7,8 +7,8 @@ enableCodeCopy = true
 
 mainSections = ["blog"]
 
-# Default site description for SEO meta tags
-description = "Damien GOEHRIG - Backend Software Engineer (Go) with 10+ years of experience building reliable distributed systems. Focused on creating maintainable code with strong performance and observability."
+# Existing landscape portrait used for pages without an article cover.
+defaultSocialImage = "img/profile.jpg"
 
 [homepage]
   layout = "profile"
@@ -19,7 +19,7 @@ description = "Damien GOEHRIG - Backend Software Engineer (Go) with 10+ years of
 
 [article]
   showDate = true
-  showDateUpdated = false
+  showDateUpdated = true
   showAuthor = true
   showBreadcrumbs = true
   showDraftLabel = true

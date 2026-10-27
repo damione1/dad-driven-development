@@ -6,6 +6,7 @@ weight = 2
 title = "Damien GOEHRIG"
 
 [params]
+  description = "Damien Goehrig, ingénieur data et IA à Montréal. Snowflake, dbt, Python et des systèmes d’IA en production."
   displayName = "FR"
   isoCode = "fr"
   rtl = false

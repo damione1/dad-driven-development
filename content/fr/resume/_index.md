@@ -1,6 +1,8 @@
 ---
 title: "Damien GOEHRIG"
 translationKey: "resume"
+seoTitle: "CV — Ingénieur Data & IA | Damien Goehrig"
+description: "Ingénieur Data & IA à Montréal : plateformes Snowflake/dbt, systèmes d’IA en production et plus de dix ans de développement logiciel. Parcours et contact."
 tagline: "Lead Data & IA | Snowflake · dbt · IA en production"
 location: "Montréal, QC, Canada"
 
