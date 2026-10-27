@@ -1,0 +1,45 @@
+{{- /* Shared metadata; never cache this partial by Site. */ -}}
+{{- $canonical := .Permalink -}}
+{{- $pageNumber := 1 -}}
+{{- if or (eq .Kind "term") (and .IsSection (eq .Section "blog")) -}}
+  {{- /* Match Blowfish's list/term collection before reading its pager.
+        Calling .Paginator first would cache ungrouped pages, leaving the
+        theme's later .PageGroups empty. */ -}}
+  {{- with .Paginate (.Pages.GroupByDate "2006") -}}
+    {{- $pageNumber = .PageNumber -}}
+    {{- $canonical = .URL | absURL -}}
+  {{- end -}}
+{{- end -}}
+{{- $title := .Params.seoTitle | default (printf "%s · %s" .Title .Site.Title) -}}
+{{- $description := .Description | default .Params.summary | default .Site.Params.description -}}
+{{- $isFR := eq .Lang "fr" -}}
+{{- if and (in (slice "term" "taxonomy") .Kind) (not .Description) -}}
+  {{- if eq .Kind "term" -}}
+    {{- $family := cond (eq .Data.Singular "category") "category" "tag" -}}
+    {{- if $isFR -}}
+      {{- $family = cond (eq .Data.Singular "category") "catégorie" "mot-clé" -}}
+      {{- $description = printf "Articles de Damien Goehrig dans la rubrique « %s » (%s) : retours d’expérience, choix techniques et exemples d’ingénierie data et logicielle." .Title $family -}}
+    {{- else -}}
+      {{- $description = printf "Damien Goehrig’s articles filed under the %s “%s”: first-hand engineering notes, technical decisions and practical examples." $family .Title -}}
+    {{- end -}}
+  {{- else -}}
+    {{- if $isFR -}}
+      {{- $description = printf "Parcourir les %s du blog de Damien Goehrig : plateformes data, IA en production, développement logiciel et projets personnels." .Title -}}
+    {{- else -}}
+      {{- $description = printf "Browse %s on Damien Goehrig’s engineering blog: data platforms, AI in production, software development and personal projects." .Title -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if gt $pageNumber 1 }}{{ $title = printf "%s — Page %d" $title $pageNumber }}{{ end -}}
+{{- $image := false -}}
+{{- with .Params.images -}}
+  {{- $image = $.Resources.GetMatch (index . 0) -}}
+  {{- if not $image }}{{ $image = resources.Get (index . 0) }}{{ end -}}
+{{- end -}}
+{{- if not $image -}}
+  {{- range slice "*featured*" "*feature*" "*cover*" "*thumbnail*" -}}
+    {{- if not $image }}{{ $image = $.Resources.GetMatch . }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $image }}{{ $image = resources.Get .Site.Params.defaultSocialImage }}{{ end -}}
+{{- return (dict "title" $title "description" ($description | plainify) "canonical" $canonical "pageNumber" $pageNumber "image" $image) -}}

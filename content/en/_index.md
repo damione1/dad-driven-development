@@ -1,10 +1,11 @@
 ---
 title: "Damien GOEHRIG"
 translationKey: "home"
+seoTitle: "Damien Goehrig | Lead Data & AI Engineer, Montreal"
 description: "Damien Goehrig, data and AI engineer in Montreal. Snowflake, dbt, Python, and AI systems that run in production. Ten years of full-stack development before that."
 ---
 
-# About Me
+## About Me
 
 I work on data and AI platforms. These days that means a lot of Snowflake, dbt and Python, and building AI systems that end up making real decisions in production rather than staying in a notebook.
 

@@ -28,5 +28,15 @@ jobs:
       - name: Build
         env:
           HUGO_ENVIRONMENT: production
-          HUGO_PARAMS_cloudflareAnalyticsToken: ${{ secrets.CF_WEB_ANALYTICS_TOKEN }}
         run: hugo --minify --gc --cleanDestinationDir
+
+      - name: Check generated SEO metadata
+        run: python3 scripts/check-seo.py public
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Check www redirect behavior
+        run: node --test cloudflare/www-redirect/redirect.test.mjs

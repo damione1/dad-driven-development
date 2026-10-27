@@ -1,6 +1,8 @@
 ---
 title: "Documenter une base de données source avec des LLM multi-agents"
+translationKey: "dbt-document-sources"
 date: 2026-02-06
+lastmod: 2026-10-27
 draft: false
 description: "Une approche multi-agent pour générer automatiquement la documentation YAML des sources dbt - ce que les LLM découvrent, leurs limites, et le workflow complet."
 tags: ["dbt", "LLM", "Data Engineering", "AI"]
@@ -49,7 +51,38 @@ Le plus intéressant, c'est ce que les agents trouvent que personne ne savait (o
 
 ## L'intégration dans dbt
 
-Une fois les YAML générés et validés, ils s'intègrent directement dans le projet dbt comme définitions de sources. Avec `persist_docs` activé, les descriptions remontent dans Snowflake et les métadonnées de classification alimentent les politiques de gouvernance. Ce mécanisme est couvert en détail dans [l'article sur les YAML comme gouvernance]({{< ref "/blog/dbt-documentation-gouvernance-yml/" >}}).
+Une fois les YAML générés et validés, ils s'intègrent directement dans le projet dbt comme définitions de sources et apparaissent dans la documentation dbt générée. Il y a une limite importante : [`persist_docs`](https://docs.getdbt.com/reference/resource-configs/persist_docs) peut persister les descriptions des ressources prises en charge, notamment les modèles, mais **n'est pas implémenté pour les sources**. L'ajouter à une définition de source ne synchronise pas les commentaires de la table Snowflake en amont.
+
+Pour les tables sources, publier ces descriptions dans Snowflake demande une étape explicite : par exemple, un script ou une macro relue qui lit les métadonnées validées et exécute des instructions [`COMMENT`](https://docs.snowflake.com/en/sql-reference/sql/comment). Les tags de classification et les politiques de masquage ont aussi besoin de leur propre implémentation ; une description ne les active pas. Cette distinction entre documentation et automatisation de la gouvernance est détaillée dans [l'article sur les YAML comme gouvernance]({{< ref "/blog/dbt-documentation-gouvernance-yml/" >}}).
+
+### Un exemple minimal de source
+
+Ce YAML illustre une source et une description de colonne validée. Remplace les identifiants par les tiens ; la description est un exemple, pas une affirmation sur un vrai jeu de données.
+
+```yaml
+version: 2
+sources:
+  - name: app
+    database: RAW
+    schema: APP
+    tables:
+      - name: ORDERS
+        description: "Commandes enregistrées par l’application."
+        columns:
+          - name: STATUS
+            description: "État de la commande : 0 en attente, 1 approuvée, 2 annulée."
+```
+
+Dans un projet configuré, génère la documentation dbt avec `dbt docs generate`. Pour publier cette description de colonne sur une table source Snowflake existante, l'instruction SQL est séparée :
+
+```sql
+COMMENT ON COLUMN "RAW"."APP"."ORDERS"."STATUS"
+  IS 'État de la commande : 0 en attente, 1 approuvée, 2 annulée.';
+
+DESCRIBE TABLE "RAW"."APP"."ORDERS";
+```
+
+Le rôle qui exécute l'instruction doit avoir les droits nécessaires sur l'objet. Vérifie le commentaire dans la sortie de `DESCRIBE TABLE`, puis la page de la source dans dbt docs. Un script générique doit protéger les identifiants et échapper les chaînes de commentaire correctement ; n'exécute pas directement une sortie de modèle comme du SQL. Ces commandes illustrent la frontière entre les deux systèmes et ne constituent pas un outil complet de synchronisation.
 
 Ce qui compte ici : les agents transforment un exercice de documentation fastidieux en base concrète pour une gouvernance active, sans que ça soit un projet séparé.
 
@@ -83,7 +116,7 @@ En pratique :
 2. Les agents produisent des fichiers YAML documentés, table par table
 3. Un humain review, corrige les erreurs, ajoute le contexte métier manquant
 4. Les YAML corrigés deviennent les définitions de sources dans dbt
-5. Les métadonnées sont poussées vers Snowflake via [`persist_docs`](https://docs.getdbt.com/reference/resource-configs/persist_docs)
+5. Pour les modèles, active `persist_docs` lorsque la ressource le permet. Pour les tables sources, utilise une étape séparée de synchronisation des commentaires, relue, puis vérifie le résultat dans Snowflake
 6. Les classifications alimentent les politiques de gouvernance
 
 Le temps total ? Pour une base de quelques centaines de tables : quelques jours d'agents + quelques jours de review humaine. Sans les agents, c'est des semaines, voire des mois, de travail manuel que personne ne veut faire.

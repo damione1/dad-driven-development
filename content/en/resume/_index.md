@@ -1,6 +1,8 @@
 ---
 title: "Damien GOEHRIG"
 translationKey: "resume"
+seoTitle: "Resume — Lead Data & AI Engineer | Damien Goehrig"
+description: "Lead Data & AI Engineer in Montreal. Experience building Snowflake/dbt platforms and production AI systems, backed by over ten years of software engineering."
 tagline: "Lead Data & AI Engineer | Snowflake · dbt · AI Systems in Production"
 location: "Montreal, QC, Canada"
 

@@ -1,5 +1,6 @@
 ---
 title: "dbt : Les tests dans les YAML, ou comment arrêter de prier pour que les données soient correctes"
+translationKey: "dbt-tests-constraints"
 date: 2026-02-27
 draft: false
 description: "Les tests déclaratifs dans dbt - des quatre tests natifs aux tests avancés, avec des exemples concrets de problèmes attrapés avant la prod."

@@ -1,6 +1,8 @@
 ---
 title: "dbt : Quand tes fichiers YAML deviennent ta gouvernance de données"
+translationKey: "dbt-documentation-governance"
 date: 2026-01-16
+lastmod: 2026-10-27
 draft: false
 description: "Transformer les YAML dbt d'une formalité optionnelle en source de vérité pour la gouvernance - classifications PII, persist_docs, masquage automatique et enforcement en CI."
 tags: ["dbt", "Snowflake", "Data Governance", "Data Engineering"]
@@ -47,6 +49,8 @@ models:
 ```
 
 Chaque description de modèle et de colonne dans tes YAML devient un commentaire visible dans Snowflake. Pas besoin d'un outil externe. Quelqu'un qui navigue les données dans Snowsight voit directement les descriptions que t'as écrites dans dbt.
+
+Cela concerne les relations et colonnes des modèles configurés ci-dessus. dbt n'implémente pas `persist_docs` pour les sources : les commentaires des tables sources demandent un script ou une macro séparée utilisant les [instructions COMMENT de Snowflake](https://docs.snowflake.com/en/sql-reference/sql/comment), avec les droits nécessaires sur les objets. Les tags de classification et les politiques de masquage sont distincts de la persistance des descriptions.
 
 Et si tu utilises [Snowflake Horizon](https://docs.snowflake.com/en/user-guide/snowflake-horizon) (leur plateforme de gouvernance), ces descriptions alimentent directement le catalogue de données. Ta documentation dbt EST ta documentation Snowflake. Une seule source de vérité.
 
