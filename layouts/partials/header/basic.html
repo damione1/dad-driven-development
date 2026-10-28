@@ -1,27 +1,10 @@
 {{/* Logo section */}}
 {{ define "HeaderLogo" }}
-  {{ if .Site.Params.Logo }}
-    {{ $logo := resources.Get .Site.Params.Logo }}
-    {{ if $logo }}
-      <div>
-        <a href="{{ "" | relLangURL }}" class="flex">
-          <span class="sr-only">{{ .Site.Title | markdownify }}</span>
-          {{ if eq $logo.MediaType.SubType "svg" }}
-            <span class="logo object-scale-down object-left nozoom">
-              {{ $logo.Content | safeHTML }}
-            </span>
-          {{ else }}
-            <img
-              src="{{ $logo.RelPermalink }}"
-              width="{{ div $logo.Width 2 }}"
-              height="{{ div $logo.Height 2 }}"
-              class="logo max-h-[5rem] max-w-[5rem] object-scale-down object-left nozoom"
-              alt="">
-          {{ end }}
-        </a>
-      </div>
-    {{ end }}
-  {{- end }}
+  {{ with resources.Get "branding/ddd-mark.svg" }}
+    {{ $logo := . | fingerprint }}
+    <img src="{{ $logo.RelPermalink }}" width="28" height="28" alt="" aria-hidden="true"
+      class="header-brand-logo nozoom">
+  {{ end }}
 {{ end }}
 
 {{/* Desktop navigation */}}
@@ -69,7 +52,7 @@
 
 {{/* Mobile navigation */}}
 {{ define "HeaderMobileToolbar" }}
-  <div class="flex md:hidden items-center gap-x-5 md:ml-12 h-12">
+  <div class="header-mobile-tools flex md:hidden items-center gap-x-5 md:ml-12 h-12">
     <span></span>
 
     {{ partial "translations.html" . }}
@@ -105,7 +88,7 @@
 {{ end }}
 
 {{ define "HeaderMobileNavigation" }}
-  <div class="-my-2 md:hidden">
+  <div class="header-mobile-menu -my-2 md:hidden">
     <div class="block">
       {{ if .Site.Menus.main }}
         <button id="menu-button" type="button" aria-expanded="false" aria-controls="menu-wrapper"
@@ -256,12 +239,12 @@
 {{/* ========== Render HTML ========== */}}
 <div
   class="main-menu flex items-center justify-between py-6 md:justify-start gap-x-3 pt-[2px] pr-2 md:pr-4 pb-[3px] pl-0">
-  {{ template "HeaderLogo" . }}
-  <div class="flex flex-1 items-center justify-between">
-    <nav class="flex space-x-3">
+  <div class="header-main flex flex-1 items-center justify-between">
+    <nav class="header-brand-nav flex min-w-0 space-x-3">
       {{ if not .Site.Params.disableTextInHeader | default true }}
-        <a href="{{ "" | relLangURL }}" class="text-base font-medium">
-          {{ .Site.Title | markdownify }}
+        <a href="{{ "" | relLangURL }}" class="header-brand text-base font-medium">
+          {{ template "HeaderLogo" . }}
+          <span>{{ .Site.Title | markdownify }}</span>
         </a>
       {{ end }}
     </nav>

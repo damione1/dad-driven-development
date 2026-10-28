@@ -123,3 +123,38 @@ a:focus-visible, button:focus-visible {
     padding: 0.5rem;
   }
 }
+
+/* Keep the vector mark and author name in one accessible home link. */
+.header-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.header-brand-logo {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+/* Give the brand and mobile tools enough room on narrow screens. */
+@media (max-width: 480px) {
+  .main-menu {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    column-gap: 0.5rem;
+  }
+  .main-menu > .header-main { display: contents; }
+  .header-brand-nav { grid-column: 1; grid-row: 1; align-self: center; }
+  .header-brand { white-space: nowrap; }
+  .header-mobile-menu { grid-column: 2; grid-row: 1; align-self: center; }
+  .header-mobile-tools {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: end;
+    height: 44px;
+  }
+}
