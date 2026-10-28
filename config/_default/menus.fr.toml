@@ -56,21 +56,21 @@
 [[main]]
   parent = "projects"
   name = "Planning Poker"
-  url = "https://github.com/damione1/planning-poker"
+  url = "https://pokerplanning.net/"
   weight = 6
   newTab = true
 
 [[main]]
   parent = "projects"
   name = "YotoMediaManager"
-  url = "https://yotomediamanager.damiengoehrig.ca"
+  url = "https://yotomediamanager.app"
   weight = 7
   newTab = true
 
 [[main]]
   parent = "projects"
   name = "Slint Kit"
-  url = "https://github.com/damione1/slint-kit"
+  url = "https://slint-kit.damiengoehrig.ca/"
   weight = 8
   newTab = true
 

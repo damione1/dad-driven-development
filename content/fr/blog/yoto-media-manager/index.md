@@ -15,13 +15,13 @@ Celles qu’on aimait étaient sur YouTube. Une bonne partie du reste de ce que 
 
 Heureusement, Yoto permet aux familles d’ajouter leur propre audio avec les cartes Make Your Own, et met une [API à disposition des développeurs](https://yoto.dev/). Je leur suis reconnaissant d’avoir laissé cette porte ouverte.
 
-J’ai donc créé [YotoMediaManager](https://yotomediamanager.damiengoehrig.ca/fr/), une app gratuite pour macOS et Windows qui regroupe la préparation de l’audio et l’édition des playlists.
+J’ai donc créé [YotoMediaManager](https://yotomediamanager.app/fr/), une app gratuite pour macOS et Windows qui regroupe la préparation de l’audio et l’édition des playlists.
 
 ## D’un lien à une playlist
 
 On importe un fichier audio ou on colle un lien YouTube. Pour une playlist YouTube publique, on choisit les vidéos à garder. Ensuite, on prépare l’audio et on l’ajoute à une playlist sur son compte Yoto.
 
-La médiathèque et la préparation de l’audio restent sur l’ordinateur. L’audio sélectionné part chez Yoto quand on l’ajoute à une playlist. Pour associer cette playlist à une carte Make Your Own physique, on passe encore par l’app officielle Yoto sur le téléphone. Le [guide de démarrage](https://yotomediamanager.damiengoehrig.ca/fr/docs/getting-started/) explique cette dernière étape.
+La médiathèque et la préparation de l’audio restent sur l’ordinateur. L’audio sélectionné part chez Yoto quand on l’ajoute à une playlist. Pour associer cette playlist à une carte Make Your Own physique, on passe encore par l’app officielle Yoto sur le téléphone. Le [guide de démarrage](https://yotomediamanager.app/fr/docs/getting-started/) explique cette dernière étape.
 
 ## Garder la chanson, couper le reste
 
@@ -47,4 +47,4 @@ yt-dlp peut donc se mettre à jour indépendamment de YotoMediaManager. L’app 
 
 YotoMediaManager est gratuit et open source, sous licence GPL-3.0-or-later, avec une interface en français et en anglais. C’est un projet indépendant qui utilise l’API de Yoto.
 
-Vous pouvez [le télécharger pour Mac ou Windows](https://yotomediamanager.damiengoehrig.ca/fr/#download), ou consulter le [code sur GitHub](https://github.com/damione1/yoto-media-manager). Si vous l’essayez avec les playlists de votre famille, les retours et les signalements de bugs sont les bienvenus.
+Vous pouvez [le télécharger pour Mac ou Windows](https://yotomediamanager.app/fr/#download), ou consulter le [code sur GitHub](https://github.com/damione1/yoto-media-manager). Si vous l’essayez avec les playlists de votre famille, les retours et les signalements de bugs sont les bienvenus.
