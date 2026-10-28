@@ -1,113 +1,77 @@
 ---
-title: "Building Planning Poker: A Real-time Collaboration App (That I Might Have Over-Engineered)"
+title: "Planning Poker Without Sign-Up: My Go and htmx App"
 date: 2025-11-15
+lastmod: 2026-10-27
 draft: false
-description: "Building a real-time Planning Poker app with Go, PocketBase, htmx, and WebSockets - and maybe going a bit overboard with the deployment infrastructure."
+translationKey: "planning-poker-app"
+description: "An online planning poker app with no sign-up: shared rooms, custom voting scales and live results, built with Go, PocketBase and an htmx interface."
 tags: ["Go", "PocketBase", "htmx", "WebSockets", "DevOps", "Terraform", "AWS"]
 categories: ["Development", "Backend"]
 images: ["planning-poker-app-featured.jpg"]
 ---
 
-So I built this Planning Poker app. You know, that agile estimation thing where teams gather around and vote on story points? Yeah, I decided to make it web-based and real-time [pokerplanning.net](https://pokerplanning.net/). And then... well, let's just say I got a little ambitious with the deployment setup.
+I built [pokerplanning.net](https://pokerplanning.net/) for a fairly specific job: run a planning poker session in a browser without asking the whole team to create another account. Create a room, join with your name, share the link, vote, reveal, discuss. That was the useful part.
 
-## The Idea
+Then I gave it a Go backend, a WebSocket hub and a deployment pipeline involving Terraform and AWS Systems Manager. I may have enjoyed the infrastructure part a little too much.
 
-Planning Poker sessions are usually chaos in a conference room — someone's writing on a whiteboard, someone else is yelling their estimate, and half the team's zoning out. The problem's simple: you need something that works instantly, doesn't require sign-ups, and just... works.
+The app is available to use now. This is the story behind it, and how to run a session if the tool is the part you're interested in.
 
-So I grabbed Go for the backend (fast, compiled, solid concurrency model), PocketBase as my all-in-one database and auth layer, and added htmx + Alpine.js on the frontend for that reactive feel without building a full React app. WebSockets for real-time updates. Simple.
+## Run a Planning Poker Session Without Registering
 
-## Why PocketBase? (The WordPress Guy's Take)
+Planning poker combines individual estimates with a team discussion. Everyone picks a value before the cards are revealed, then the team talks about the differences. [Mountain Goat Software's guide](https://www.mountaingoatsoftware.com/agile/story-points/planning-poker) explains the method; the app handles the shared room and voting.
 
-Here's the thing — I spent years doing WordPress development. Loved it, hated it, the usual. When I transitioned into actual software development, I started doing the whole dance: pick an ORM, set up migrations, wire up authentication, build your router, handle database schema changes... it's exhausting.
+The workflow is short:
 
-PocketBase felt like the Go equivalent of what WordPress was to me — a sensible all-in-one baseline. You get a database layer, authentication, an admin UI, migrations that actually work, and an HTTP router. It's structured enough to move fast, but flexible enough to extend.
+1. **Create a room.** Give it a name and choose Fibonacci, modified Fibonacci, t-shirt sizes or your own values.
+2. **Join it yourself**, then share the room link or QR code. Teammates enter a display name and choose whether to vote or spectate.
+3. **Discuss one story and vote.** The room shows who has voted while keeping the values hidden until reveal.
+4. **Reveal and compare.** Review the distribution, agreement and, for numeric votes, the average. Talk through the differences rather than treating the average as the team's decision.
+5. **Vote again or start the next round.** Room settings control who can reveal, reset and advance, and whether reveal happens automatically once everyone has voted.
 
-I didn't want to spend the next week messing around with Gorm, writing migration files, building auth middleware, and configuring a router. I wanted to ship something in a few days. PocketBase let me focus on the actual problem: making Planning Poker work in real-time.
+![The Planning Poker room creation form, with a room name, voting scale and optional session controls](planning-poker-room-setup.png)
 
-And if this ever turns into something I want to monetize as a SaaS, I can build on top of this foundation. The headless nature of PocketBase means I can eventually swap out the frontend, add a pricing layer, whatever. It's a solid base.
+Rooms expire 24 hours after creation. They're temporary spaces for a session, not a permanent backlog or a record of every estimate your team has ever made. Keep your usual issue tracker and call alongside the room.
 
-## SQLite: The Unsung Database Hero
+## Why I Started with PocketBase
 
-Real talk: I love Postgres. Seriously. But for this project? SQLite was the right call.
+I spent years doing WordPress development. One thing I appreciated was having a usable starting point: data, administration and conventions already there. When I moved further into Go, I didn't particularly want every side project to begin with choosing an ORM, wiring authentication and building an admin interface.
 
-Most people don't realize this, but SQLite is the [most deployed](https://sqlite.org/mostdeployed.html) database engine in the world. Your phone probably has a dozen SQLite databases running right now. Android, iOS, Firefox, Chrome — all SQLite. It's boring, reliable, and seriously underestimated.
+[PocketBase](https://pocketbase.io/docs/) gave me a similar baseline in Go: SQLite, collections, migrations, authentication capabilities and an admin UI. The public planning poker flow doesn't require an account, but I still wanted the backend's data-management tools.
 
-For a Planning Poker app that doesn't need horizontal scaling or complex multi-user transactions at massive scale, SQLite is _exactly_ what you need. No separate database server to manage, no connection pooling headaches, no "is the DB down?" crisis calls at 3 AM. It lives in a file. You can back it up, version it, move it around.
+That let me spend time on rooms, participants, rounds and votes. Those are the things the app actually needs to understand. Choosing a backend that already handles the surrounding plumbing was a way to get to them sooner.
 
-I made a deliberate choice this time: don't over-engineer the database. The app doesn't need the complexity of Postgres. SQLite handles 20,000 concurrent WebSocket connections on a t3.micro without breaking a sweat. That's plenty.
+## SQLite for the Votes, WebSockets for the Room
 
-## What It Does
+The persistent state lives in SQLite through PocketBase. A room has participants and rounds; votes belong to a round. The live connections are managed separately by the Go WebSocket hub.
 
-The core loop is pretty straightforward:
+That keeps storage and delivery separate. The hub tracks active room membership and broadcasts updates. Bounded queues and connection limits put safeguards around the workload, while the database keeps the session data.
 
-- Create a room, no login needed
-- People join with a name
-- You set up a voting round with Fibonacci or custom values
-- Everyone votes at the same time
-- Reveal and discuss
-- Repeat
+For this project, the practical advantage of SQLite is simpler: no separate database service to operate for a tool with a small, defined data model.
 
-There's role-based stuff too — you can be a voter or just a spectator. Room creators can lock things down however they want. Everything syncs in real-time via WebSocket, so when someone votes, everyone sees it instantly (or sees that they voted, at least — votes are hidden until reveal).
+## htmx Instead of a Separate Frontend App
 
-The state management is clean. Rounds have states: voting, revealed, completed. Participants track who's where. Votes live in the database. Rooms auto-expire after 24 hours so you're not storing dead data forever.
+The interface is rendered with [templ](https://templ.guide/) in Go. [htmx](https://htmx.org/docs/) handles the HTML interactions and WebSocket integration; Alpine.js handles browser-side controls such as the room settings.
 
-## Performance? Yeah, I Checked
+I like keeping the interface close to the server for this kind of app. A room isn't a whole frontend platform. It needs to show participants, accept votes, reveal results and stay in step with the server's current round.
 
-Here's where it gets a bit absurd. On a t3.micro (1 vCPU, 1GB RAM), this thing can handle:
+The interesting part is the round lifecycle: `voting → revealed → completed`. When someone reconnects or another participant starts the next round, the browsers need to converge on the same state. There are integration tests around voting, automatic reveal and participant limits, plus concurrency tests around the hub.
 
-- 2,000-3,000 concurrent rooms
-- 20,000-30,000 WebSocket connections
-
-That's... a lot more than you'd ever need for Planning Poker. But I wasn't about to ship something that couldn't handle its own success, right?
-
-I built in async broadcasting with non-blocking message delivery, per-client send channels with buffering, fine-grained locking. There's monitoring endpoints so you can peek at real-time metrics. Slow clients get detected and cleaned up automatically. It's way too complex for what it does, but it _works_.
+That is where the care belongs. A tidy form doesn't help if two people are looking at different rounds.
 
 ## The Deployment Rabbit Hole
 
-And then I got to deployment.
+The original deployment workflow was more elaborate than the form suggested. A version tag triggered tests, a Docker image build and a push to GitHub Container Registry. GitHub Actions then used AWS Systems Manager to run the deployment command on EC2.
 
-Instead of just throwing it on a server with SSH, I decided to go full enterprise mode. Here's the setup:
+Production has since moved to AWS Lightsail. The current pipeline still tests and builds the app from a version tag, then deploys the container using a short-lived Lightsail SSH certificate and checks the public health endpoint. Terraform describes the infrastructure, and Docker Compose runs the service.
 
-1. **GitHub Actions** watches for git tags
-2. Builds a multi-architecture Docker image
-3. Pushes to GitHub Container Registry
-4. Triggers an AWS Systems Manager Run Command
-5. EC2 instance pulls the image
-6. Docker Compose spins up the containers
-7. Health checks validate everything's live
+The mechanism changed, but the goal stayed the same: a repeatable release that checks what actually happened, rather than assuming an uploaded image means the app is live.
 
-Zero SSH keys exposed. No ports open except HTTP/HTTPS. Everything's audited in CloudTrail. And yeah, I went full Terraform on the infrastructure — EC2, security groups, IAM roles, the whole thing.
+Could I have kept this smaller? Certainly. But I wanted to work through a repeatable Go deployment that doesn't depend on manually opening an SSH session. The pipeline was part of what I wanted to learn, even if a planning poker room hardly demanded the whole exercise.
 
-Is it overkill for a Planning Poker app? 100%. Could I have just SSHed into a box and ran it? Yeah. But this way, deploying is literally just `git tag v1.0.0 && git push origin v1.0.0`. Two minutes later it's live. And you've got an audit trail, automatic rollback capabilities, and infrastructure-as-code. So really, I'm just being thorough.
+## Use the Tool, or Read the Code
 
-## Tech Stack (The Real One)
+If your team needs an online planning poker room without registration, [create a room on pokerplanning.net](https://pokerplanning.net/). Choose your scale, join first and send the link to the team.
 
-- **Backend**: Go 1.25, PocketBase 0.30 (which is essentially Echo + SQLite + admin UI in one binary)
-- **Frontend**: htmx 2.0 for AJAX/WebSocket, Alpine.js 3.14 for interactivity, Templ for templating
-- **Database**: SQLite (bundled in PocketBase)
-- **Deployment**: Docker, Docker Compose, Terraform, GitHub Actions, AWS SSM
-- **Monitoring**: Built-in metrics endpoint, health checks
+The [code is on GitHub](https://github.com/damione1/planning-poker), under the [Elastic License 2.0](https://github.com/damione1/planning-poker/blob/master/LICENSE). If you're here for the implementation, the room manager, WebSocket hub and integration tests are the useful places to start.
 
-## Why This Stack?
-
-PocketBase was the real discovery here. Everyone wants to build a backend, but PocketBase just gives you one. Database, migrations, admin UI, auth, all of it. I just had to wire up the WebSocket hub and business logic. That's time not spent messing around with boilerplate.
-
-htmx + Alpine is underrated for this kind of project. No build pipeline headaches, no JavaScript framework fatigue, just declarative HTML attributes that do what you'd expect. Progressive enhancement, hypermedia, all that good stuff. You write less code, it's easier to follow, and your frontend doesn't become a maintenance nightmare in six months.
-
-And Go's goroutines made the WebSocket hub trivial. Broadcasting messages to thousands of connections? Goroutines with channels. Done. That's the real advantage of Go for this use case — concurrency that doesn't drive you crazy.
-
-## The Real Challenge
-
-Honestly? Getting the state machine right. Rounds need to flow properly: voting → revealed → completed → new round. Participants need to stay synced. Connections drop and reconnect — you can't lose someone's vote because their WiFi dropped out.
-
-That took more thought than the deployment did. The infrastructure was just... doing what infrastructure does. The hard part was making sure the voting logic was solid.
-
-## So Is It Done?
-
-Yeah, it works. You can run `make dev` and it spins up locally with live reload. There's integration tests. It's got metrics, health checks, proper error handling. You could actually use this to run Planning Poker sessions right now.
-
-Is the deployment way too complex for a Planning Poker app that probably won't ever break a sweat at scale? Absolutely. But hey, it's there, it works, and now I've got a template for deploying Go apps to AWS without touching SSH. That's worth something, right?
-
-The real lesson though? Don't over-engineer the database. SQLite did the job. PocketBase saved me from spending three days on boilerplate. Go's concurrency primitives made the hard parts easy. And sometimes the best infrastructure is the one that gets out of your way and just works.
-
-You could actually use this to run Planning Poker sessions right now at [pokerplanning.net](https://pokerplanning.net/).
+It's a small collaboration tool built around a deliberately short user journey. The deployment took the scenic route. Joining a room shouldn't have to.
