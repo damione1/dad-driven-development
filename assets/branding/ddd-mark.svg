@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Dad Driven Development</title>
+  <rect width="64" height="64" rx="14" fill="#222b2e"/>
+  <g fill="none" stroke="#8be0c1" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 12h16c14 0 22 8 22 20s-8 20-22 20H14Z"/>
+    <path d="M14 22h15c8 0 13 4 13 10s-5 10-13 10H14"/>
+    <path d="M14 32h15"/>
+  </g>
+</svg>
