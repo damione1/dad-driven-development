@@ -40,6 +40,12 @@ Cloudflare Pages injecte le beacon Web Analytics configuré dans le projet. Ne p
 
 Le Worker dédié et ses tests sont dans [cloudflare/www-redirect](cloudflare/www-redirect/README.md). La redirection est indépendante de Hugo et conserve le chemin et la query string. Le fichier Pages `_redirects` ne prend pas en charge les redirections par nom d’hôte.
 
+## Cache Cloudflare
+
+`static/_headers` réserve un an de cache `immutable` aux CSS et JavaScript fingerprintés par Hugo. Les images, icônes et polices remplaçables sont fraîches pendant une journée ; JSON et XML pendant une heure. Les motifs commencent par `/`. Éviter de superposer deux règles `Cache-Control` sur une même URL : Pages concatène leurs valeurs. Le HTML conserve la revalidation navigateur et le cache CDN natif de Pages, invalidé au déploiement.
+
+Pour comparer les statistiques, filtrer `requestSource: eyeball` et le nom d’hôte exact. Suivre séparément `damiengoehrig.ca` et `slint-kit.damiengoehrig.ca`, sans agréger les services personnels (`ha`, `bw`, `home`, etc.) ni l’ancien domaine Yoto. Garder les 404 et redirections visibles dans le total, puis examiner aussi les réponses 200/304 et les ressources. Les sondes `earlyHintsCache` peuvent produire des 504 internes sans erreur pour les visiteurs.
+
 ## Archives et données Search Console
 
 La revue GSC du 27 octobre 2026 est documentée dans `damiengoehrig.ca-audit/gsc/REPORT.md`. Huit archives strictement dupliquées et leurs flux RSS redirigent vers les destinations retenues ; sept suivent la canonicale inspectée dans Google, la huitième son équivalent français. Le plan détaillé et les ensembles d’articles sont conservés dans `damiengoehrig.ca-audit/implementation/archive-consolidation.json`. Les archives ayant reçu des clics sont conservées.

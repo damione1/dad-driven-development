@@ -1,54 +1,51 @@
-# Cache static assets for 1 year
+# Hugo fingerprints CSS and JavaScript; their URLs change with their content.
 /css/*
   Cache-Control: public, max-age=31536000, immutable
 
 /js/*
   Cache-Control: public, max-age=31536000, immutable
 
-/img/*
-  Cache-Control: public, max-age=31536000, immutable
-
 /lib/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Cache images for 1 year
-*.jpg
-  Cache-Control: public, max-age=31536000, immutable
+# Images include replaceable originals and icons, so revalidate after one day.
+# Paths must start with /; the splat also matches nested article images.
+/*.jpg
+  Cache-Control: public, max-age=86400, must-revalidate
 
-*.jpeg
-  Cache-Control: public, max-age=31536000, immutable
+/*.jpeg
+  Cache-Control: public, max-age=86400, must-revalidate
 
-*.png
-  Cache-Control: public, max-age=31536000, immutable
+/*.png
+  Cache-Control: public, max-age=86400, must-revalidate
 
-*.webp
-  Cache-Control: public, max-age=31536000, immutable
+/*.webp
+  Cache-Control: public, max-age=86400, must-revalidate
 
-*.avif
-  Cache-Control: public, max-age=31536000, immutable
+/*.avif
+  Cache-Control: public, max-age=86400, must-revalidate
 
-*.svg
-  Cache-Control: public, max-age=31536000, immutable
+/*.svg
+  Cache-Control: public, max-age=86400, must-revalidate
 
-*.ico
-  Cache-Control: public, max-age=31536000, immutable
+/*.ico
+  Cache-Control: public, max-age=86400, must-revalidate
 
-# Cache fonts for 1 year
-*.woff
-  Cache-Control: public, max-age=31536000, immutable
+# Fonts without content hashes can be replaced at the same URL.
+/*.woff
+  Cache-Control: public, max-age=86400, must-revalidate
 
-*.woff2
-  Cache-Control: public, max-age=31536000, immutable
+/*.woff2
+  Cache-Control: public, max-age=86400, must-revalidate
 
-*.ttf
-  Cache-Control: public, max-age=31536000, immutable
+/*.ttf
+  Cache-Control: public, max-age=86400, must-revalidate
 
-*.eot
-  Cache-Control: public, max-age=31536000, immutable
+/*.eot
+  Cache-Control: public, max-age=86400, must-revalidate
 
-# Cache HTML for 1 hour (allows for faster updates)
-/*.html
-  Cache-Control: public, max-age=3600, must-revalidate
+# Keep the Pages default for HTML: browser revalidation and deployment-aware CDN
+# caching. Public page URLs do not have an .html extension.
 
 # Cache XML feeds for 1 hour
 /*.xml
