@@ -1,35 +1,34 @@
 ---
-title: "Plus près de la machine : une obsession pour les types stricts"
+title: "Types stricts : des enums Rust aux contrats partagés"
 date: 2026-09-17
+lastmod: 2026-10-28
 draft: false
 translationKey: "strict-types"
-description: "2026, on code presque plus : ce n'est pas une raison de lâcher la rigueur. On dicte le quoi et le comment à l'IA. Mon comment, c'est les types stricts : un set dans le type, un compilateur qui crie, un contrat qui traverse les machines."
+description: "Pourquoi j’utilise les enums Rust, les match exhaustifs et les contrats partagés pour repérer les oublis, surtout quand une IA écrit le patch."
 tags: ["Rust", "Go", "Types", "Protobuf", "gRPC", "Software Design"]
 categories: ["Développement"]
 images: ["closer-to-the-machine-strict-types-featured.jpg"]
 ---
 
-2026, c'est l'heure du développement agentique. On code presque plus. On dit ce qu'on veut, un modèle l'écrit, on relit, on relance. Ce n'est pas une raison de perdre les bonnes pratiques. C'est même le contraire : elles sont la seule chose qui tient encore quand ce n'est plus toi qui poses chaque ligne. Et il faut que l'IA les applique. Elle ne le fera pas par politesse. Il faut les lui dicter.
+J’utilise les enums Rust pour mettre les valeurs autorisées dans le type, puis laisser les `match` exhaustifs me dire ce que j’ai oublié. La même obsession me suit dans les clients générés, les contrats d’API et les schémas de base de données : déclarer le set une fois, et faire répondre le reste du code devant lui.
 
-Un projet vibe coded n'est pas mauvais par nature. Il le devient si tu ne dis que le *quoi*. L'IA invente le *comment*, et c'est le comment qui pourrit : une string à la place d'un enum, un `null` à la place d'un bool, le même set recopié dans trois fichiers. À nous de dicter la rigueur. Ce qu'on veut implémenter, et surtout comment.
+Ça compte encore plus quand un agent IA écrit le patch. On dit ce qu’on veut, un modèle l’écrit, on relit, on relance. Les bonnes pratiques doivent toujours venir de quelque part. L’agent ne les appliquera pas par politesse. Il faut les lui dicter.
 
-Mon *comment*, l'obsession que je recolle dans chaque prompt, c'est **les types stricts**. Le set de valeurs vit dans le type, une fois. Le compilateur refuse le reste. Le « contrat » (protobuf, client généré, `match` exhaustif) n'est pas un autre sujet. C'est le type, poussé jusqu'à l'autre fichier, jusqu'à l'autre machine.
+Un projet vibe coded n’est pas mauvais par nature. Il devient fragile si tu ne dis que le *quoi*. L’IA invente le *comment*, et c’est le comment qui pourrit : une string à la place d’un enum, un `null` inexpliqué, le même set recopié dans trois fichiers. Mon *comment*, c’est les types stricts. Plus précisément : **encoder les contraintes que le système de types peut faire respecter, et vérifier le reste aux frontières**.
 
-Ça n'est pas venu d'un paper. Pendant des années j'ai écrit du PHP et du JavaScript. Le programme était un texte que la machine relisait à chaque exécution, et le contrat entre deux fonctions tenait souvent dans le nom d'un paramètre et un commentaire. Ça marche. On livre. On ajoute un `if`.
+## De PHP et JavaScript à Go et Rust
 
-Puis j'ai passé du temps en Go, ensuite en Rust. Quelque chose s'est inversé. Ce n'est pas que ces langages soient magiques. C'est que le programme n'est plus un script qu'on interprète. Il est abaissé, une fois, vers quelque chose que la machine connaît déjà. Et si tu lui donnes un type au lieu d'une string, elle n'a plus à deviner. Rendre une app déterministe, c'est ça : **forcer le set de valeurs attendu dans le type**.
+Ça n’est pas venu d’un paper. Pendant des années j’ai écrit du PHP et du JavaScript. Dans ces projets, le contrat entre deux fonctions tenait souvent dans le nom d’un paramètre et un commentaire. Ça marche. On livre. On ajoute un `if`.
 
-## Compilé, ça veut dire décidé trop tôt. C'est le point
+Puis j’ai passé du temps en Go, ensuite en Rust. Quelque chose s’est inversé. Structs, constructeurs, l’habitude de ne plus passer `map[string]interface{}` partout. Go m’a mis le pied dans la porte. Rust a verrouillé le verrou.
 
-Un langage lu (PHP, JS, Python au quotidien) te laisse remettre la décision à plus tard. La fonction prend une `string`. Au runtime tu vérifies, tu normalises, tu logs un warning, tu tombes dans un `else`. Le set de valeurs « réelles » vit dans la tête des gens, dans un wiki, dans un `if` copié trois fois.
+La distinction qui compte, c’est ce que le système de types peut exprimer et ce que le build vérifie vraiment. [PHP a des enums](https://www.php.net/manual/fr/language.enumerations.overview.php). [TypeScript peut vérifier l’exhaustivité des unions discriminées](https://www.typescriptlang.org/docs/handbook/2/narrowing#exhaustiveness-checking). Compiler vers du code natif ne donne pas ces garanties à lui seul.
 
-Un langage compilé te force à décider avant. Pas « plus près du silicium » au sens romantique. Plus près de la représentation : ce qui existe, ce qui n'existe pas, combien ça pèse, qui a le droit de le construire.
+Les types nommés et les constantes `iota` de Go m’ont aidé à rendre l’intention visible, mais ils ne ferment pas un ensemble et ne rendent pas un `switch` exhaustif. Un `enum` Rust décrit bien un ensemble fixé de variantes, avec les données que chacune porte. Un `match` qui nomme chaque variante casse le build quand tu en ajoutes une. C’est cette friction-là que je veux.
 
-Go m'a mis le pied dans la porte. Structs, constructeurs, `iota`, l'habitude de ne plus passer `map[string]interface{}` partout. Rust a verrouillé le verrou. Un `enum` n'est pas une liste de constantes. C'est un type somme. Le compilateur connaît le set. Un `match` sans `_` casse le build le jour où tu ajoutes une variante. En JavaScript, le même oubli se retrouve en production sous la forme d'un thème `"Dark"` qui n'allume jamais le dark mode, parce que quelqu'un avait écrit `"dark"`.
+## Des enums Rust plutôt que des strings magiques
 
-## Une string, ce n'est pas un contrat
-
-Typer une fonction qui accepte une `string`, c'est déjà mieux que rien. Ça dit : pas un nombre, pas un objet. Ça ne dit pas _laquelle_.
+Typer une fonction qui accepte une `string`, c’est déjà mieux que rien. Ça dit : pas un nombre, pas un objet. Ça ne dit pas _laquelle_.
 
 ```
 setTheme("dark")
@@ -39,105 +38,148 @@ setTheme("sombre")
 setTheme("")
 ```
 
-Cinq appels, un seul est « le bon », et encore : ça dépend de qui a écrit le `if`. Tu dois valider. Tu dois documenter. Tu dois te souvenir de valider au prochain call site. Le jour où le set change, rien ne casse à la compilation. L'app devient non déterministe au sens qui m'intéresse : deux chemins, deux orthographes, deux comportements.
+Cinq appels, un seul est « le bon », et encore : ça dépend de qui a écrit le `if`. Tu dois valider. Tu dois documenter. Tu dois te souvenir de valider au prochain call site. Le jour où le set change, rien ne casse à la compilation. Deux chemins, deux orthographes, deux comportements. Le compilateur n’a aucune raison de se plaindre.
 
 Si tu forces le set dans le type :
 
 ```rust
 enum Theme { Dark, Light, System }
 
-fn set_theme(theme: Theme) { /* ... */ }
+fn theme_label(theme: Theme) -> &'static str {
+    match theme {
+        Theme::Dark => "dark",
+        Theme::Light => "light",
+        Theme::System => "system",
+    }
+}
 ```
 
-`set_theme("sombre")` n'existe plus. Il n'y a plus rien à valider à l'entrée. Le set est le type. Les cinq call sites, l'UI, le fichier de config, le log : ils parlent de la même chose, ou le compilateur refuse.
+`theme_label("sombre")` ne compile pas. Ajouter `Theme::Sepia` à l’enum sans toucher au `match` non plus :
 
-C'est ça, l'obsession. Pas « j'aime les generics ». **Éliminer une classe entière d'erreurs en rendant l'état invalide inconstructible.**
+```text
+error[E0004]: non-exhaustive patterns: `Theme::Sepia` not covered
+```
 
-Alexis King a un nom pour ça : *parse, don't validate*. Transformer une donnée douteuse en un type qui rend l'état invalide impossible, une fois, à la frontière, plutôt que la valider à chaque call site en la laissant repartir sous sa forme large. `set_theme` ne valide pas une string à l'entrée. Il refuse de compiler avec autre chose qu'un `Theme`.
+C’est la [vérification d’exhaustivité](https://doc.rust-lang.org/book/ch06-02-match.html). Le compilateur pointe la branche oubliée. Pas de grep, pas de checklist dont quelqu’un doit se souvenir.
 
-## Un booléen, c'est oui ou non
+Le fichier de config contient toujours du texte, par contre. Le type ne remonte pas dans le temps pour corriger une faute sur le disque.
 
-Héritage Go, et ça me va. Chaque type a une *zero value*. Un `bool`, c'est `true` ou `false`. Pas `null`. Pas `undefined`. Pas un troisième état « on sait pas encore » qui se faufile dans un JSON. Si tu as vraiment besoin d'un troisième état, tu le nommes : un `Option<bool>`, un enum. Tu ne le laisses pas arriver tout seul.
+## Parser une fois à la frontière
 
-Une `string` peut être vide. `""` veut dire : le champ est là, personne n'a rien mis. Ça existe. Ce qui n'existe pas, c'est la string absente. Si elle « n'existe pas », c'est qu'en amont quelqu'un n'a pas initialisé, pas sérialisé, pas collé le champ. Le trou n'est pas une valeur du type. C'est un bug.
+Le [*Parse, don’t validate*](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/) d’Alexis King décrit bien le réflexe : transformer une entrée douteuse en un type qui conserve ce qu’on a vérifié. Puis faire circuler ce type.
 
-Ça choque un peu quand on vient de JavaScript, où tout est `string | null | undefined` et où `if (name)` mélange le vide, le zéro et l'oubli. Go refuse ce mélange pour les scalaires. Rust te force à écrire `Option` quand l'absence est réelle. Les deux disent la même chose : **ne pas exister n'est pas une valeur**.
+Pour le thème, la frontière peut tenir dans ça :
 
-## Closed set, open set
+```rust
+impl TryFrom<&str> for Theme {
+    type Error = &'static str;
 
-Tout n'est pas un enum. C'est même le piège.
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "dark" => Ok(Self::Dark),
+            "light" => Ok(Self::Light),
+            "system" => Ok(Self::System),
+            _ => Err("unknown theme"),
+        }
+    }
+}
+```
 
-Un **ensemble fermé**, c'est un set dont les valeurs sont décidées par le code, pas par l'utilisateur ni par les données. Thème, méthode de collage, niveau de log, onglet de settings, état d'enregistrement. Ajouter une valeur, c'est éditer le type. Donc c'est un enum, déclaré une fois, converti exhaustivement à chaque frontière.
+Le parser décide ce qu’il accepte. Une fois qu’il renvoie un `Theme`, le reste du code n’a plus à se demander si `"Dark"` veut dire `"dark"`. Le joker a sa place ici : l’entrée peut être n’importe quelle string. Dans `theme_label`, où l’entrée est notre enum fermé, il masquerait une variante oubliée.
 
-Un **ensemble ouvert**, c'est l'inverse. L'id d'un modèle, l'UID d'un micro, le nom d'un template que l'utilisateur a tapé. Les mettre dans un enum de 400 variantes, c'est mentir : le set n'est pas fermé. Le backend envoie un catalogue, le front lit une liste. Un newtype (`DeviceUid`) si tu veux que ça ne se mélange pas avec une autre `String`. Pas un enum « au cas où ».
+C’est ça, l’obsession. **Éliminer une classe d’erreurs en rendant les états invalides impossibles à représenter dans le code qui les consomme.** Tu as toujours besoin du parser. Tu arrêtes juste de jeter l’information qu’il t’a donnée.
 
-J'ai lu les [Framework Design Guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/enum) de Microsoft en travaillant là-dessus. Ce n'est pas le même langage. L'obsession est la même : enum pour un petit set fermé, pas pour les noms de tes amis, pas de variante réservée « pour plus tard », pas de sentinelle `All` fourrée dans le type de l'item. En Rust on va plus loin, parce que le `match` est exhaustif. Ajouter une variante _doit_ casser le build. En C#, un `switch` non exhaustif ne déclenche qu'un warning, pas un blocage à la compilation. Chez nous, ce warning-là, on le traite comme un crash. On ne met pas de `_ =>` « pour la compat ».
+## Un booléen, c’est oui ou non
+
+Héritage Go, et ça me va. Un `bool` a deux valeurs. Si j’ai besoin d’un troisième état, je veux le nommer : un `Option<bool>` en Rust, un pointeur ou un type dédié en Go, un enum quand les états méritent un nom.
+
+Ce choix demande quand même de l’attention à la frontière. Le [`encoding/json`](https://go.dev/src/encoding/json/decode.go) de Go ne rejette pas `null` quand il décode vers un simple `bool` ou une `string` : il laisse la valeur inchangée, sans erreur. Sur une struct fraîche, un booléen absent et un `false` explicite peuvent avoir la même tête. Si la distinction compte, le décodeur et le modèle doivent la préserver.
+
+Pareil pour les strings. Vide et absent peuvent vouloir dire deux choses différentes. Parfois l’absence est un bug ; parfois c’est une requête PATCH qui dit « ne touche pas à ce champ ». Je veux cette décision dans le contrat, plutôt qu’enterrée dans un `if (name)` qui mélange le vide, le zéro et l’oubli. **L’absence mérite un type quand elle fait partie du métier.**
+
+## Ensemble fermé, ensemble ouvert
+
+Tout n’est pas un enum. C’est même le piège.
+
+Un **ensemble fermé**, c’est un set dont les valeurs sont décidées par le code, pas par l’utilisateur ni par les données. Thème, méthode de collage, niveau de log, onglet de settings, état d’enregistrement. Ajouter une valeur, c’est éditer le type. Donc c’est un enum, déclaré une fois, converti exhaustivement à chaque frontière.
+
+Un **ensemble ouvert**, c’est l’inverse. L’id d’un modèle, l’UID d’un micro, le nom d’un template que l’utilisateur a tapé. Les mettre dans un enum de 400 variantes, c’est mentir : le set n’est pas fermé. Le backend envoie un catalogue, le front lit une liste. Un newtype (`DeviceUid`) si tu veux que ça ne se mélange pas avec une autre `String`. Pas un enum « au cas où ».
+
+J’ai lu les [Framework Design Guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/enum) de Microsoft en travaillant là-dessus. Ce n’est pas le même langage. L’obsession est la même : enum pour un petit set fermé, pas pour les noms de tes amis, pas de variante réservée « pour plus tard », pas de sentinelle `All` fourrée dans le type de l’item. Dans mon code métier Rust, je veux chaque variante nommée dans le `match`. Ajouter une variante doit casser le build là où elle n’a pas été prise en compte. Je ne rajoute pas un `_ =>` juste pour refaire compiler le vieux code. Les enums externes conçus pour évoluer ont un autre contrat ; ils demandent une politique explicite pour les cas inconnus.
 
 ## Une seule source de vérité
 
-Le corollaire, c'est organisationnel autant que technique.
+Le corollaire, c’est organisationnel autant que technique.
 
-Si le thème est un enum dans le backend, une string dans l'UI, et une autre string dans le fichier de settings, tu n'as pas un type. Tu as trois copies d'un set, et elles vont dériver. Je l'ai payé. Dans [Soufflé]({{< ref "/blog/souffle-transcription-locale-macos/" >}}), le contrat visuel et le contrat moteur doivent parler des mêmes onglets, des mêmes thèmes, des mêmes méthodes de collage. Une déclaration. Une conversion exhaustive de chaque côté de la frontière. Jamais la même littérale écrite deux fois.
+Si le thème est un enum dans le backend, une string dans l’UI, et une autre string dans le fichier de settings, tu n’as pas un type. Tu as trois copies d’un set, et elles vont dériver. Je l’ai payé. Dans [Soufflé]({{< ref "/blog/souffle-transcription-locale-macos/" >}}), le contrat visuel et le contrat moteur doivent parler des mêmes onglets, des mêmes thèmes, des mêmes méthodes de collage. Une déclaration. Une conversion exhaustive de chaque côté de la frontière. Jamais la même littérale écrite deux fois.
 
-Ça ressemble à ce que je raconte déjà sur la [state machine]({{< ref "/blog/souffle-transcription-locale-macos/" >}}) : quatre booléens décrivent seize combinaisons, dont la moitié sont du non-sens. Un seul type d'état, avec exactement les données qui ont du sens pour cet état, et les combinaisons invalides cessent d'exister. Le typing strict, c'est le même réflexe appliqué aux _valeurs_ plutôt qu'au _cycle de vie_.
+C’est le même réflexe que celui que je racontais avec la machine à états de Soufflé : quatre booléens décrivent seize combinaisons, dont la moitié sont du non-sens. Un seul type d’état, avec exactement les données qui ont du sens pour cet état, et les combinaisons invalides cessent d’exister. Le typing strict, c’est le même réflexe appliqué aux _valeurs_ plutôt qu’au _cycle de vie_.
 
-## Le compilateur guide l'agent
+## Le compilateur guide l’agent
 
-En 2026, le patch ne vient souvent plus d'un humain qui a le graphe entier dans la tête. Tu demandes un fix à une IA. Elle lit trois fichiers, elle touche le quatrième, elle n'a pas ouvert le cinquième.
+En 2026, le patch ne vient souvent plus d’un humain qui a le graphe entier dans la tête. Tu demandes un fix à une IA. Elle lit trois fichiers, elle touche le quatrième, elle n’a pas ouvert le cinquième.
 
-Sans types, le cinquième fichier continue de compiler. Un `if (theme === "dark")` quelque part dans un header « non lié » prend silencieusement l'autre branche. Tu le découvres en QA, ou en prod, ou jamais.
+Sans types, le cinquième fichier continue de compiler. Un `if (theme === "dark")` quelque part dans un header « non lié » prend silencieusement l’autre branche. Tu le découvres en QA, ou en prod, ou jamais.
 
-Oui, l'IA va peut-être grepper la valeur qu'elle vient de remplacer. Ou pas, justement. Selon le mot, elle récupère trois hits, ou trois mille. Ensuite elle les lira un par un. Ou elle en manquera. Ou elle s'arrêtera au vingtième parce que le contexte est plein. Le compilateur, lui, crie. Fichier, ligne, variante manquante. C'est ce qu'on veut.
+Oui, l’IA va peut-être grepper la valeur qu’elle vient de remplacer. Ou pas, justement. Selon le mot, elle récupère trois hits, ou trois mille. Ensuite elle les lira un par un. Ou elle en manquera. Ou elle s’arrêtera au vingtième parce que le contexte est plein. Le compilateur, lui, crie. Fichier, ligne, variante manquante. C’est ce qu’on veut.
 
-Avec un enum et un `match` exhaustif, surtout en Rust, **le compilateur est le premier reviewer, et il est verbeux exprès**. Tu ajoutes `Theme::Sepia`. `rustc` ne dit pas « error ». Il dit : non-exhaustive patterns, voici les sites, voici la variante manquante, fichier et ligne. Souvent un fichier que l'agent n'avait pas dans son contexte. L'agent relit le diagnostic, patch le `match`, relance. La boucle tient dans le terminal.
+Avec un enum et un `match` exhaustif, surtout en Rust, **le compilateur est le premier reviewer, et il est verbeux exprès**. Tu ajoutes `Theme::Sepia`. `rustc` te renvoie les sites incomplets, la variante, le fichier et la ligne. Souvent un fichier que l’agent n’avait pas dans son contexte. L’agent relit le diagnostic, patch le `match`, relance. La boucle tient dans le terminal.
 
-C'est pour ça que, dans Soufflé, on interdit le `match` joker sur les enums métier amenés à grossir (`clippy::wildcard_enum_match_arm`). Un `_ =>` est un trou dans lequel l'agent (ou moi) fourre la nouvelle variante sans la traiter. Sur un enum qui ne bougera plus, la règle ne servirait à rien. Sur les nôtres, elle sert à chaque fois : on veut le crash. Le crash est le guide.
+C’est pour ça que, dans Soufflé, on interdit le `match` joker sur les enums métier amenés à grossir (`clippy::wildcard_enum_match_arm`). Un `_ =>` est un trou dans lequel l’agent (ou moi) fourre la nouvelle variante sans la traiter. Sur un enum qui ne bougera plus, la règle ne servirait à rien. Sur les nôtres, elle sert à chaque fois : on veut le crash. Le crash est le guide.
 
-Un langage lu te donne un linter optionnel, qu'un agent peut ignorer ou contourner. Un compilateur typé te donne un mur. Tu ne merges pas tant que le mur est là. L'IA n'a pas à « penser à checker l'autre fichier ». Le type _est_ la checklist.
+Le mur ne tient que si les checks tournent. Dans mon workflow, une erreur de compilation ou un lint Clippy interdit bloque le merge. L’agent doit encore corriger le bon comportement ; ajouter un fallback pour faire taire le diagnostic rate tout l’intérêt. Mais il n’a plus à se souvenir d’ouvrir chaque consommateur. Le type lui donne la liste.
 
-## Le même set, de l'autre côté du réseau
+## Les types partagés de l’autre côté du réseau
 
-Jusqu'ici le contrat vit dans un process. Le réflexe ne s'arrête pas à la frontière du binaire.
+Jusqu’ici le contrat vit dans un process. Le réflexe ne s’arrête pas à la frontière du binaire.
 
-J'aime beaucoup [Protocol Buffers](https://protobuf.dev/). Pour deux raisons, qui n'en sont qu'une.
+J’aime beaucoup [Protocol Buffers](https://protobuf.dev/). Pour deux raisons, qui n’en sont qu’une.
 
-La première : ça ouvre [gRPC](https://grpc.io/). Entre mes services, entre un worker et une API, c'est mon défaut : un protocole binaire, compact, streaming, où le contrat est sur le chemin obligatoire. Tu ne rediscutes pas le set à chaque hop.
+La première : ça ouvre [gRPC](https://grpc.io/). Entre mes services, entre un worker et une API, c’est mon défaut : un protocole binaire, compact, streaming, où le contrat est sur le chemin obligatoire. Tu ne rediscutes pas le set à chaque hop.
 
-Quand j'expose une API JSON, typiquement vers l'extérieur ou un navigateur qui ne parle pas protobuf, je passe par [OpenAPI](https://www.openapis.org/), avec génération de clients et un schéma forcé sur le payload. Je suis tout aussi strict là-dessus, un JSON Schema bien tenu, c'est déjà un contrat. Ce que je constate, c'est que par défaut JSON reste une string : le schéma est un add-on qu'on peut oublier, un `additionalProperties: true` que quelqu'un laissera passer, un `null` qui se faufile à la place d'un bool. gRPC met le contrat sur le chemin obligatoire par construction, sans qu'on ait à y penser.
+Quand j’expose une API JSON, typiquement vers l’extérieur ou un navigateur qui ne parle pas protobuf, je passe par [OpenAPI](https://www.openapis.org/), avec génération de clients et validation à la frontière. JSON peut porter un contrat tout aussi rigoureux. Il faut juste que le schéma et les checks soient sur le vrai chemin des requêtes.
 
-La seconde : **c'est la même logique que le typing, prolongée entre deux machines**. Frontend et backend. Worker et API. Microservices. Le proto est la source. Tu déclares l'enum une fois, tu génères les clients dans chaque langage, tu t'assures d'une continuité. Le closed set traverse le réseau sans redevenir du folklore.
+La seconde : **c’est le même réflexe de typage, prolongé entre les machines**. Frontend et backend. Worker et API. Le proto est la source. Tu déclares l’enum une fois, tu génères les clients, tu arrêtes de recopier la liste dans chaque langage.
 
-La même obsession peut descendre encore d'un cran, jusqu'à la base. Postgres a des enums natifs (`CREATE TYPE mood AS ENUM (...)`), pas un `varchar` avec un `CHECK` qu'on croise les doigts pour respecter. Le closed set existe dans le schéma, pas seulement dans le code applicatif. Reste à ne pas le recopier à la main côté Go ou Rust. Un ORM qui génère depuis la DB, [sqlc](https://sqlc.dev/) ou [SQLBoiler](https://github.com/volatiletech/sqlboiler) par exemple, part des migrations appliquées, lit le schéma réel, et sort les structs et les enums. La source, c'est la migration. Le code applicatif est un client généré, comme le proto. À l'inverse, un ORM code-first ne « recopie » pas forcément le type : si le modèle est bien typé, l'enum n'existe toujours qu'une fois, côté code. Le vrai risque est ailleurs. Lire un schéma existant pour en déduire du code est une réflexion mécanique et fidèle, comme `buf generate` pour un `.proto`. Déduire une migration d'un diff entre deux modèles est une inférence : un renommage de colonne se scaffold souvent en `DROP` puis `ADD`, ce qui perd les données, et il faut réécrire la migration à la main pour dire `RENAME COLUMN`. Cette migration éditée à la main, c'est elle qui tourne en prod, pas le modèle. Rien ne garantit qu'elle reste synchro au prochain diff. La source glisse, silencieusement, du modèle vers un fichier de migration devenu la vraie autorité, sans que le compilateur ne voie rien.
+Il y a un piège qui mérite de rester visible. [Les enums proto3 sont ouverts](https://protobuf.dev/programming-guides/enum/), et ajouter une valeur est [compatible sur le fil](https://protobuf.dev/programming-guides/proto3/#updating). Ça ne casse automatiquement ni la génération ni les builds. Un vieux client peut recevoir un nombre qu’il ne connaît pas. Les types générés nous donnent un vocabulaire commun ; les convertir vers un enum métier fermé et décider quoi faire des valeurs inconnues reste notre travail. Déployer des versions compatibles aussi.
 
-Concrètement, chez moi, ça ressemble à ça.
+### Jusqu’à la base de données
 
-Sur le [thread art generator](https://github.com/damione1/thread-art-generator), le contrat c'est protobuf. `ArtStatus` (pending, processing, complete, failed, archived) n'est pas une string que le navigateur, l'API Go et le worker se refilent au pif. `buf generate` sort les types. Le browser parle protobuf en binaire sur `/rpc`. Les services se parlent en gRPC. Un statut ajouté dans le `.proto` casse la génération, puis le build, des deux côtés.
+La même obsession peut atteindre la base. Postgres a des [enums natifs](https://www.postgresql.org/docs/current/datatype-enum.html) : le set nommé existe dans le schéma. Une [contrainte `CHECK`](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-CHECK-CONSTRAINTS) fait aussi respecter les valeurs autorisées. Les deux sont de vraies contraintes. Ce qui m’intéresse, c’est où le set est déclaré et comment il arrive dans l’application sans être recopié à la main.
 
-Sur [Maslow Desktop]({{< ref "/blog/maslow-desktop-controleur-cnc/" >}}), le même fichier `proto/maslow/v1/*.proto` alimente l'app, une API HTTP, du gRPC, et un serveur MCP pour qu'un LLM pilote la machine. La doc du site n'est pas écrite à la main : elle est générée depuis ces artefacts. Un `WsState` { disconnected, connected } n'existe qu'à un endroit. Les trois transports et l'agent MCP jouent avec le même set.
+Les outils peuvent porter ce contrat dans les deux sens. [sqlc](https://sqlc.dev/) génère du code depuis le schéma et les requêtes SQL ; [SQLBoiler](https://github.com/volatiletech/sqlboiler) inspecte la base. Un ORM code-first peut fonctionner aussi. Ce que je ne veux pas, c’est trois définitions qui prétendent toutes faire autorité.
 
-Soufflé, à l'époque Tauri, faisait la version in-process du même truc : un enum Rust, `specta`, un client TypeScript généré, CI qui refuse un `generated.ts` modifié à la main. Le moteur et l'UI n'avaient pas le droit de divergir sur `Theme` ou `PasteMethod`. Je suis en train de le sortir du webview, vers [Slint](https://slint.dev/), pour une UI native Metal. Le contrat n'a pas changé de métier, juste de forme : enum Slint, `match` Rust. L'idée n'a pas bougé : **une déclaration, des clients, pas de copie**.
+Les migrations sont l’endroit où ça devient inconfortable. Un outil peut prendre un renommage pour une suppression et un ajout. La migration qu’on relit et qu’on exécute, c’est elle qui change la prod. Le code généré aide sur la forme ; il ne nous dispense pas de lire la migration.
 
-Le proto n'est pas une paperasse d'archi. C'est le type, mis sur le fil.
+### Dans mes projets
 
-## Ce que ça change en mémoire, vraiment
+Sur le [thread art generator](https://github.com/damione1/thread-art-generator), le contrat c’est protobuf. [`ArtStatus`](https://github.com/damione1/thread-art-generator/blob/master/proto/art.proto) vit dans le schéma, avec ses valeurs unspecified, pending-image, processing, complete, failed et archived. `buf generate` sort les types Go et TypeScript. Le browser parle protobuf en binaire sur `/rpc` ; les services se parlent en gRPC. Changer le set commence dans un fichier, puis il faut vérifier le code généré et ses consommateurs. Le générateur ne promet pas que chaque consommateur a traité le nouveau statut.
 
-`"clipboard"` dans une string, c'est un pointeur, une longueur, et des octets sur le tas (ou l'équivalent). Tu le copies, tu le compares, tu le parses. À chaque couche, tu re-valides que c'est bien l'un des trois mots magiques.
+Sur [Maslow Desktop]({{< ref "/blog/maslow-desktop-controleur-cnc/" >}}), les mêmes fichiers `proto/maslow/v1/*.proto` alimentent l’app, une API HTTP, du gRPC, et un serveur MCP pour qu’un LLM pilote la machine. La doc du site n’est pas écrite à la main : elle est générée depuis ces artefacts. Le [schéma partagé `WsState`](https://github.com/damione1/maslow-desktop/blob/master/proto/maslow/v1/common.proto) nomme unspecified, disconnected et connected. Les transports et le client MCP tirent leur vocabulaire réseau de cette définition.
 
-Un enum `PasteMethod { Clipboard, Typing, Ax }`, au runtime, c'est un discriminant. Un petit entier. La machine ne transporte pas le mot « clipboard ». Le mot existe une fois, dans le compilateur, pour les humains. Les 10 000 call sites portent une étiquette de la taille d'un mot, pas la valeur lisible.
+Soufflé, à l’époque Tauri, faisait la version in-process du même truc : un enum Rust, `specta`, un client TypeScript généré, CI qui refuse un `generated.ts` modifié à la main. Le moteur et l’UI n’avaient pas le droit de diverger sur `Theme` ou `PasteMethod`. Je suis en train de le sortir du webview, vers [Slint](https://slint.dev/), pour une UI native Metal. Le contrat change de forme avec lui : enums Slint et conversions Rust explicites. Ces mappings ont aussi besoin d’être vérifiés. La règle à laquelle je reviens reste la même : **une autorité, des types générés quand c’est possible, des conversions explicites quand c’est nécessaire**.
 
-Ce n'est pas « les pointeurs c'est plus zen ». C'est : **tu paies le tag, tu ne paies pas la string, tu ne paies pas le `strcmp`**. Sur un hot path ça se mesure. Sur un settings panel, ça se sent surtout comme du calme : plus de round-trip `to_string` / parse, plus de `"Dark"` vs `"dark"`.
+Le proto n’est pas une paperasse d’archi. C’est le type, mis sur le fil.
 
-Rust pousse le même réflexe plus loin avec les types somme. `Mode::Meeting { id }` n'est pas `mode: String` plus `meeting_id: Option<String>`. Le payload n'existe que dans la variante où il a un sens. Tu n'alloues pas un `Option` vide pour les cas qui n'en ont pas besoin, et tu ne peux pas lire un id de meeting pendant une dictée.
+## Ce que les types changent au runtime
 
-## Déterministe, concrètement
+Il y a un bénéfice de représentation aussi, mais on a vite fait de le survendre.
 
-Quand je dis déterministe, je ne parle pas de floating point ni de threads. Je parle de ça :
+Un petit enum sans données permet de brancher sur une variante plutôt que de parser un mot à répétition. Ça ne veut pas dire que chaque string alloue : un `&str` Rust peut pointer vers un littéral. Ni que chaque enum fait la taille d’un mot machine. Sa [représentation dépend de ses variantes et de son layout](https://doc.rust-lang.org/reference/type-layout.html). Je mesurerais un hot path avant de promettre un gain de vitesse.
 
-- L'app n'a pas d'état que le type refuse. « En réunion sans id de réunion » ne compile pas. Un bool n'est pas `null`. Une string absente n'est pas une valeur, c'est un oubli en amont.
-- Un nouvel onglet, un nouveau thème, un nouveau niveau de log : le compilateur liste les sites. Pas un QA, pas un grep. Un agent qui n'avait pas le fichier dans son contexte se le fait recracher par `rustc`.
-- L'UI et le moteur ne peuvent pas diverger sur le set, parce qu'il n'y a qu'un set. Deux machines non plus, si le set vit dans un `.proto`.
-- Au runtime, tu n'interprètes pas un mot. Tu branches sur un tag que le compilateur a déjà vérifié. Sur le réseau, tu ne re-parses pas une string JSON pour retrouver le même enum.
+Sur un settings panel, le bénéfice qui m’intéresse est déjà concret : moins de round-trips `to_string` / parse, plus de `"Dark"` contre `"dark"`, moins d’endroits qui entretiennent la même liste.
 
-Le programme lu te laisse être flou jusqu'à 3 h du matin. Le programme compilé, typé serré, te demande d'être précis à 10 h, une fois, et ensuite il tient le contrat tout seul.
+Les types somme vont plus loin. `Mode::Meeting { id }` met l’id de réunion dans la variante où il a un sens, au lieu de laisser `mode: String` et `meeting_id: Option<String>` dériver chacun de son côté. Le gain, c’est la combinaison impossible qu’on ne peut plus construire. [`Option` n’implique pas une allocation sur le tas](https://doc.rust-lang.org/std/option/index.html#representation) ; c’est l’invariant qui justifie de changer le modèle.
 
-C'est plus de friction le mardi. C'est moins de folklore le jeudi. J'ai choisi le mardi.
+## Des changements plus prévisibles
+
+J’appelais ça rendre l’app déterministe. C’est trop large. Les types ne prouvent pas que la logique métier est juste, n’empêchent pas toutes les courses et ne mettent pas à jour un service qui tourne sur un vieux binaire. Ce que je veux est plus précis :
+
+- Un thème fait partie des variantes déclarées. Un mode réunion porte son id de réunion. L’absence est explicite là où le métier en a besoin.
+- Ajouter une variante fait échouer les `match` Rust incomplets. L’agent récupère le fichier, la ligne et le cas manquant, y compris dans les fichiers qu’il n’avait pas lus.
+- L’UI, le moteur et les services partagent une source pour leur vocabulaire, avec des conversions et des règles de compatibilité vérifiées aux frontières.
+- Les strings restent à leur place : entrées externes, identifiants, texte libre. À l’intérieur d’un domaine fermé, le code manipule le type.
+
+Le type me demande de décider plus tôt. Le compilateur et la CI me demandent de tenir cette décision jusqu’au bout. Quand un agent écrit le patch, c’est un bout de design de moins laissé à ce qui tenait par hasard dans son contexte.
+
+C’est plus de friction le mardi. C’est moins de folklore le jeudi. J’ai choisi le mardi.

@@ -113,6 +113,8 @@ Au début, l'application se pilotait comme la plupart des applications se pilote
 
 Le problème de fond, c'est que quatre booléens décrivent seize combinaisons, et que la moitié n'a aucun sens. « En train d'enregistrer » et « modèle non chargé » ne devraient jamais être vrais en même temps, mais rien dans le code ne l'interdit.
 
+J’ai détaillé ce réflexe dans mon article sur [les enums Rust et les types partagés pour rendre ces états invalides impossibles]({{< ref "/blog/plus-pres-de-la-machine-types-stricts/" >}}). La machine à états, c’est là où cette habitude m’a le plus visiblement servi.
+
 J'ai donc tout remplacé par **un seul type, côté backend, qui décrit l'état complet de l'application**. Une dizaine d'états explicites : au repos, téléchargement du modèle, chargement, prêt, en dictée, en réunion, en train d'arrêter, en train de décharger, en erreur. Chaque état transporte exactement les données qui ont un sens pour lui, et rien d'autre : un état d'enregistrement contient forcément l'identifiant de sa session, un état de réunion contient forcément l'identifiant de la réunion. On ne peut pas être en réunion sans réunion.
 
 Et les changements d'état passent par une seule fonction, qui refuse les transitions illégales au lieu de les exécuter silencieusement.

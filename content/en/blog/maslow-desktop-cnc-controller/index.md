@@ -33,6 +33,8 @@ That information exists, but it's scattered through the firmware's C++ code, in 
 
 From that, I built a typed model in the Rust backend mirroring the firmware: ten explicit states, from "unknown" to "ready to cut" by way of extending the belts and computing calibration. Each state knows what it allows, and the backend derives an action policy from it that the interface consumes as-is.
 
+It’s the same [preference for explicit Rust types and shared contracts]({{< ref "/blog/closer-to-the-machine-strict-types/" >}}) that keeps showing up in my projects. Here, the allowed actions follow from the state instead of another list maintained by the UI.
+
 The consequence is simple: **the UI only offers what the machine can actually do right now**. A button that would lead to a rejected transition is disabled, with the reason shown next to it rather than a silent dead end. You can no longer alarm the machine with a bad click sequence, because the bad sequence isn't clickable.
 
 It's the same principle I put at the center of [Soufflé]({{< ref "/blog/souffle-local-transcription-macos/" >}}), my other Rust project: make state explicit and forbid invalid combinations by construction. Except here, the stakes aren't a button greyed out at the wrong moment. It's a spinning router.

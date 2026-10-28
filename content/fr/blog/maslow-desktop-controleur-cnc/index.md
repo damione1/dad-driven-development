@@ -33,6 +33,8 @@ C'est une information qui existe, mais elle est dispersée dans le code C++ du f
 
 À partir de ça, j'ai construit dans le backend Rust un modèle typé qui reflète le firmware : dix états explicites, du « inconnu » au « prêt à couper » en passant par le déploiement des courroies et le calcul de calibration. Chaque état sait ce qu'il autorise, et le backend en déduit une politique d'actions que l'interface consomme telle quelle.
 
+C’est la même [préférence pour les types Rust explicites et les contrats partagés]({{< ref "/blog/plus-pres-de-la-machine-types-stricts/" >}}) qui revient dans mes projets. Ici, les actions autorisées découlent de l’état, au lieu d’une autre liste entretenue par l’UI.
+
 La conséquence est simple : **l'UI ne propose que ce que la machine peut réellement faire à cet instant**. Un bouton qui mènerait à une transition refusée est désactivé, avec la raison affichée à côté plutôt qu'un cul-de-sac silencieux. On ne peut plus se mettre en alarme par une mauvaise séquence de clics, parce que la mauvaise séquence n'est pas cliquable.
 
 C'est exactement le même principe que celui que j'avais mis au centre de [Soufflé]({{< ref "/blog/souffle-transcription-locale-macos/" >}}), mon autre projet en Rust : rendre l'état explicite et interdire les combinaisons invalides par construction. Sauf qu'ici, l'enjeu n'est pas un bouton grisé au mauvais moment. C'est une défonceuse qui tourne.

@@ -113,6 +113,8 @@ Early on, the app was driven the way most apps are driven: with scattered boolea
 
 The underlying problem is that four booleans describe sixteen combinations, and half of them are nonsense. "Recording" and "model not loaded" should never be true at the same time, but nothing in the code forbids it.
 
+I wrote more about [using Rust enums and shared types to make those invalid states unrepresentable]({{< ref "/blog/closer-to-the-machine-strict-types/" >}}). The state machine is where that habit paid off most visibly.
+
 So I replaced all of it with **a single type, in the backend, that describes the app's complete state**. About ten explicit states: idle, downloading the model, loading, ready, dictating, in a meeting, stopping, unloading, error. Each state carries exactly the data that makes sense for it and nothing else: a recording state necessarily carries its session id, a meeting state necessarily carries its meeting id. You cannot be in a meeting without a meeting.
 
 And state changes go through a single function that rejects illegal transitions instead of silently performing them.
