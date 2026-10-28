@@ -1,118 +1,161 @@
 ---
-title: "dbt : Les tests dans les YAML, ou comment arrêter de prier pour que les données soient correctes"
+title: "Tests dbt en YAML : arrêter de prier pour ses données"
 translationKey: "dbt-tests-constraints"
 date: 2026-02-27
+lastmod: 2026-10-28
 draft: false
-description: "Les tests déclaratifs dans dbt - des quatre tests natifs aux tests avancés, avec des exemples concrets de problèmes attrapés avant la prod."
+description: "Mes tests dbt en YAML pour repérer les nulls et les clés en double, puis vérifier les données en CI sans gaspiller les crédits Snowflake."
 tags: ["dbt", "Data Quality", "Data Engineering", "Testing"]
 categories: ["Data Engineering", "Data Quality"]
 images: ["dbt-tests-constraints-yml-featured.jpg"]
 ---
 
-Tu connais cette sensation : un rapport qui sort des chiffres bizarres, un analyste qui te dit "les totaux matchent pas", et tu passes ta journée à remonter la chaîne pour trouver où les données ont dérapé. Souvent, le problème aurait pu être détecté automatiquement si quelqu'un avait mis un test quelque part.
+Un rapport sort des chiffres bizarres. Un analyste te dit « les totaux matchent pas », et tu passes ta journée à remonter la chaîne. Le réflexe auquel je reviens est assez banal : **des tests de données dbt, déclarés en YAML à côté des colonnes, et vraiment exécutés en CI**. Dire au pipeline ce qu’on attend avant qu’un dashboard nous dise ce qui a dérapé.
 
-## Les tests déclaratifs dans dbt
+## Ce que les tests de données dbt vérifient vraiment
 
-dbt a un système de tests intégré directement dans les YAML de documentation. C'est le même fichier qui documente tes colonnes et qui déclare tes tests. L'idée est simple : tu décris tes attentes sur les données, et dbt les vérifie à chaque exécution.
+Les [data tests de dbt](https://docs.getdbt.com/docs/build/data-tests) sont des vérifications SQL sur les données. Les tests génériques permettent de les déclarer dans les mêmes fichiers YAML que la documentation des modèles et des sources. dbt génère le SQL du test ; tu l’exécutes avec `dbt test`, ou tu construis et testes les ressources sélectionnées avec `dbt build`. `dbt run` seul ne lance pas les tests.
 
-Les [quatre tests natifs](https://docs.getdbt.com/docs/build/data-tests) :
-- **not_null** : cette colonne ne devrait jamais être vide
-- **unique** : pas de doublons sur cette colonne
-- **accepted_values** : les seules valeurs possibles sont cette liste
-- **relationships** : cette colonne référence une autre table (intégrité référentielle)
+Les quatre tests génériques natifs sont un bon point de départ :
 
-C'est déclaratif. Tu n'écris pas de SQL de test, tu déclares des contraintes.
+- **`not_null`** : aucun `NULL` SQL dans cette colonne. Une string vide est une autre valeur.
+- **`unique`** : aucun doublon parmi les valeurs non nulles. À combiner avec `not_null` pour un identifiant obligatoire.
+- **`accepted_values`** : les valeurs non nulles appartiennent à la liste déclarée.
+- **`relationships`** : les valeurs non nulles existent dans la relation et la colonne référencées.
 
-## Au-delà des tests de base
+Le [traitement des nulls](https://docs.getdbt.com/reference/resource-properties/data-tests) compte. `accepted_values` et `relationships` ne rejettent pas les `NULL` ; il faut ajouter `not_null` si l’absence est invalide.
 
-Les quatre tests de base couvrent une bonne partie des besoins, mais pas tout. Pour le reste, il y a les packages de tests et les tests custom.
+Ce sont des assertions sur les données que tu interroges. Pas des contraintes de base de données qui empêchent l’insertion d’une mauvaise ligne. Un test vert dit que cette assertion était vraie sur les données vérifiées, à ce moment-là. Il ne prouve pas que le modèle entier est correct.
 
-**Les tests de combinaison.** "Cette combinaison de colonnes doit être unique." Par exemple, une commande ne devrait apparaître qu'une seule fois par date et par client. C'est pas un simple `unique` sur une colonne, c'est une contrainte composite. [`dbt-utils`](https://github.com/dbt-labs/dbt-utils) fournit `unique_combination_of_columns` pour ça.
+## Un exemple YAML que je peux relire au merge
 
-**Les tests de distribution.** "Cette colonne ne devrait pas avoir plus de X% de valeurs nulles." Utile pour les colonnes qui *peuvent* être nulles mais ne devraient pas l'être *trop souvent*.
-
-**Les tests de fraîcheur.** "La donnée la plus récente dans cette source ne devrait pas avoir plus de 24 heures." Techniquement c'est un mécanisme séparé dans dbt ([`dbt source freshness`](https://docs.getdbt.com/docs/build/sources#source-data-freshness)), mais ça se déclare au même endroit dans les YAML. Si ta source arrête d'envoyer des données et que personne ne le remarque pendant une semaine, t'as un problème.
-
-**Les tests de cohérence.** "Le sous-total + taxes + livraison devrait être égal au total de commande." C'est le genre de test qui attrape les bugs d'arrondi et les incohérences de calcul avant qu'un client ou fournisseur te le signale.
-
-## Tests sur les sources : la première ligne de défense
-
-Un pattern que j'apprécie particulièrement : tester les données source, pas juste les modèles transformés.
-
-Quand tes données arrivent dans Snowflake via un outil de réplication (genre Fivetran, Airbyte), tu n'as aucune garantie sur leur qualité. Le système source peut avoir des bugs. La réplication peut avoir des problèmes. Les types peuvent changer sans prévenir.
-
-En mettant des tests directement sur les définitions de sources dans dbt, tu crées une première ligne de défense :
-- Est-ce que les colonnes que tu attends sont toujours là ?
-- Est-ce que les types sont corrects ?
-- Est-ce que les IDs sont bien uniques ?
-- Est-ce qu'il y a des données récentes ?
-
-Quand un test source fail, ça te dit "le problème vient d'en amont, pas de ta transformation." C'est de l'information précieuse pour le debug.
-
-En pratique, c'est souvent le meilleur moyen de découvrir qu'un collègue du côté dev a fait un changement sur l'un de ses services sans passer par la case "prévenir l'équipe data". Une colonne renommée, un nouveau statut ajouté, un type qui change silencieusement en prod. Sans tests sur les sources, tu le découvres quand un dashboard est cassé. Avec, tu catches rapidement pourquoi la dynamic table et tout le lineage fail. Tu roules tes tests, ça te donne une première piste, et tu peux aller poser la bonne question à la bonne équipe avant de partir débugger dans le mauvais sens.
-
-## La CI comme filet de sécurité
-
-Les tests ne servent à rien si personne ne les roule. La pipeline CI est là pour ça.
-
-Chaque PR qui touche aux modèles dbt déclenche un cycle complet :
-1. Build des modèles en environnement CI
-2. Exécution de tous les tests
-3. Validation de la documentation (complétude)
-4. Si tout passe, la PR peut être mergée
-
-Le point clé : la CI fail si un test fail. Pas de warning ignoré, pas de "on corrigera plus tard." Si tes données ne passent pas les contraintes que tu as déclarées, le code ne va pas en production.
-
-### CI sur Snowflake : quelques réglages pour ne pas saigner des crédits
-
-Si ta CI build une stack éphémère complète à chaque PR, il y a quelques réglages qui font une vraie différence sur la facture.
-
-**Dimensionner les warehouses selon le volume de CI.** Un XS suffit pour la plupart des builds CI, inutile de sur-dimensionner. Le vrai paramètre à ajuster, c'est combien de runs parallèles tu peux avoir en simultané sur une journée chargée.
-
-**Utiliser des databases transient pour la CI.** Une [database transient dans Snowflake](https://docs.snowflake.com/en/user-guide/tables-temp-transient) ne conserve pas de Fail-Safe (la rétention de données en cas de corruption ou suppression accidentelle qui est activée par défaut sur les tables standard). Pour de la donnée CI qui est de toute façon recréée à chaque run, payer pour le Fail-Safe n'a aucun sens. Déclarer la database cible de la CI comme transient coupe ce coût sans aucun impact fonctionnel.
-
-**Nettoyer proprement à la fin.** Le step de cleanup de ta CI doit dropper la database entière, pas juste les tables créées pendant le run. Un pipeline qui plante à mi-chemin sans cleanup laisse des objets orphelins qui tournent, notamment les Dynamic Tables, qui continuent à se rafraîchir et à consommer des crédits jusqu'à ce que quelqu'un les supprime manuellement. Vérifier de temps en temps que des vieilles CI databases ne traînent pas est une bonne hygiène.
-
-**Overrider le lag des Dynamic Tables en CI.** Par défaut, une Dynamic Table déployée en CI va essayer de se rafraîchir selon son lag cible : toutes les heures, toutes les 5 minutes, selon ce qui est déclaré en prod. En CI, tu veux exactement le contraire : qu'elles ne se rafraîchissent jamais toutes seules. La solution est d'overrider le `target_lag` à une valeur longue (genre `8760 hours`, soit un an) dans ton profil CI. La table est créée, les tests tournent sur le contenu initial, et aucun refresh automatique ne vient perturber ou prolonger l'exécution.
-
-**Utiliser `--defer` avec un manifest de prod.** C'est probablement l'optimisation la plus impactante. dbt a une option [`--defer`](https://docs.getdbt.com/reference/node-selection/defer) qui, combinée avec le manifest de la branche principale, permet de ne builder que les modèles modifiés dans la PR. Pour les modèles non touchés, dbt les "proxie" vers la version prod existante plutôt que de les recréer from scratch. Une PR qui modifie 3 modèles dans un DAG de 200 ne build que ces 3 modèles et leurs dépendants directs, pas la stack entière. Le gain en temps et en crédits est considérable sur les projets de taille respectable.
-
-## Les tests comme documentation vivante
-
-Ce qui est élégant avec les tests déclaratifs dans les YAML, c'est qu'ils servent aussi de documentation. Quand tu vois :
+Sur un modèle `orders`, je veux un identifiant présent et unique, et un statut à la fois présent et tiré d’un ensemble connu :
 
 ```yaml
-- name: status
-  description: "Statut de la commande"
-  tests:
-    - not_null
-    - accepted_values:
-        values: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']
+# models/orders.yml
+version: 2
+
+models:
+  - name: orders
+    description: "Une ligne par commande"
+    columns:
+      - name: order_id
+        description: "Identifiant de la commande"
+        data_tests:
+          - not_null
+          - unique
+      - name: status
+        description: "Statut de la commande"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']
 ```
 
-Tu sais immédiatement trois choses :
-1. Ce que la colonne contient (description)
-2. Qu'elle ne peut pas être vide (not_null)
-3. Quelles sont ses valeurs possibles (accepted_values)
+La syntaxe `arguments:` est disponible à partir de dbt 1.10.5 ; les anciennes versions placent les arguments directement sous le nom du test. `tests:` reste un alias de `data_tests:`, mais j’utilise le nom explicite ici.
 
-C'est de la documentation qui se vérifie automatiquement. Quand un nouveau statut de commande apparaît dans les données, le test fail, la documentation est mise à jour, et tout le monde est au courant.
+Pour vérifier le modèle existant, ou le reconstruire et le vérifier :
 
-## Les erreurs qui m'ont convaincu
+```bash
+dbt test --select orders
+dbt build --select orders
+```
 
-Quelques exemples concrets de problèmes attrapés par des tests :
+C’est aussi pour ça que j’aime garder descriptions et tests ensemble. Tu peux lire le contrat attendu sans fouiller dans une suite de tests à part. Je pousse cette idée dans [l’article sur la documentation dbt et la gouvernance]({{< ref "/blog/dbt-documentation-gouvernance-yml/" >}}).
 
-**Le type boolean fantôme.** Une colonne qui devrait être boolean mais qui contient des `NULL` en plus de `true/false`. Le code source traite `NULL` comme `false`, mais ta transformation dbt ne fait pas forcément pareil. Un test `accepted_values: [true, false]` combiné à `not_null` clarifie l'intention.
+Quand un nouveau statut de commande arrive, le test nous donne quelque chose de concret à discuter. La source a-t-elle changé légitimement ? Est-ce qu’on a oublié un cas ? Est-ce que la donnée est fausse ? Mettre le YAML à jour vient après cette discussion. Ce n’est pas le remède automatique à un test qui fail.
 
-**L'ID en double.** Un système source qui, suite à un bug de migration, a dupliqué quelques milliers d'enregistrements. Sans test `unique`, ces doublons se propagent silencieusement dans toute la chaîne de transformation.
+## Quand l’unicité porte sur plusieurs colonnes
 
-## Ce que j'en retiens
+Un snapshot quotidien des commandes peut répéter un `order_id` sur plusieurs dates. Ce qui doit rester unique, c’est le couple `order_id` et `snapshot_date`. Tester chaque colonne seule décrirait le mauvais grain.
 
-L'approche qui a marché pour moi part d'une hiérarchie simple.
+[`dbt_utils.unique_combination_of_columns`](https://github.com/dbt-labs/dbt-utils#unique_combination_of_columns-source) fait cette vérification, une fois un package `dbt-utils` compatible installé. L’exemple suit son format d’arguments documenté pour dbt Core 1.10.6 et plus récent :
 
-**En premier : les contraintes YAML.** `not_null`, `unique`, `accepted_values`, `relationships`. Ces tests ne sont pas séparables de la documentation : ils *sont* la documentation. Déclarer qu'une colonne `status` accepte `['PENDING', 'SHIPPED', 'DELIVERED']`, c'est à la fois documenter le contrat et le vérifier à chaque run. Le coût est quasi nul (une ligne de YAML), et ça donne une couverture de base sur toutes les colonnes sans effort particulier. C'est le minimum non négociable.
+```yaml
+models:
+  - name: order_daily_snapshots
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - order_id
+              - snapshot_date
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+      - name: snapshot_date
+        data_tests:
+          - not_null
+```
 
-**Ensuite seulement : les tests complexes.** Tests de cohérence, de distribution, de mapping : ceux qui nécessitent du SQL custom ou des packages comme `dbt-utils`. Ceux-là sont précieux, mais ils ont un coût : il faut les relire.
+Le test de combinaison cherche les doublons ; il ne rend pas chaque composante obligatoire. Je garde `not_null` sur les deux, parce qu’un snapshot sans commande ou sans date ne respecte pas le contrat de ce modèle. Ce sont des tests de données, pas une déclaration de clé primaire composite dans Snowflake.
 
-C'est là où j'ai appris à ma dépens : déléguer la génération de tests à un LLM sans passer par une relecture sérieuse, c'est se retrouver avec de la fausse couverture. Des tests qui s'exécutent, qui passent, et qui ne testent pas vraiment ce qu'ils prétendent tester. C'est pire que pas de tests du tout, parce que ça donne une confiance non méritée. J'ai relu des tests générés par LLM que je n'avais pas vérifiés au moment du merge, et certains étaient tout simplement à côté de la plaque : logique inversée, mauvaise table référencée, seuil arbitraire sans sens métier. Ça passe mais ça ne sert à rien.
+Au-delà, il reste des règles que les quatre tests natifs ne savent pas exprimer. « Cette colonne facultative ne devrait pas être presque toujours nulle. » « Le sous-total plus les taxes plus la livraison doit donner le total de commande. » Les packages et les tests SQL custom peuvent couvrir ça. Le vrai travail, c’est de choisir une règle qui veut dire quelque chose, puis de lire le SQL censé la faire respecter.
 
-La règle que j'applique maintenant : les contraintes YAML, toujours, systématiquement, vérifiées en CI. Les tests complexes, seulement quand j'ai le temps de les relire ligne par ligne avant de les merger. Une couverture de 30% de tests bien compris vaut mieux qu'une couverture de 80% de tests dont personne ne sait vraiment ce qu'ils vérifient.
+## Les tests sur les sources : une première piste
+
+Un pattern que j’apprécie particulièrement : tester les données source, pas juste les modèles transformés.
+
+Quand les données arrivent dans Snowflake via Fivetran, Airbyte ou un autre outil de réplication, je ne pars pas du principe qu’elles sont propres. Un test `unique` sur un identifiant source ou `accepted_values` sur un statut me donne un endroit où regarder plus tôt quand ça casse en aval.
+
+C’est souvent comme ça que je découvre un changement côté dev qui n’est pas passé par la case « prévenir l’équipe data ». Une colonne renommée, un nouveau statut, un type qui a changé en prod. Un test source peut fail ou partir en erreur avant que je passe l’après-midi à débugger la mauvaise transformation. Ça me donne une piste ; ça ne prouve pas quel service est responsable.
+
+Les quatre tests génériques ne vérifient pas le schéma complet d’une source ni le type de chaque colonne. Pour ces garanties, il me faut des contrôles de schéma explicites. Lister les colonnes dans un YAML ne suffit pas.
+
+La fraîcheur est encore une autre question. La [configuration de freshness](https://docs.getdbt.com/reference/resource-configs/freshness) compare un timestamp configuré ou les métadonnées d’un entrepôt supporté aux seuils déclarés. `dbt source freshness` vérifie les sources ; dbt v2 propose aussi `dbt freshness` pour les sources et modèles configurés. `dbt build` n’inclut pas ces contrôles. Un timestamp d’ingestion récent est utile, mais il ne prouve pas à lui seul que les événements métier sont récents.
+
+## La CI transforme les tests en condition de merge
+
+Les tests ne servent à rien si personne ne les roule. Ma règle, c’est que le job CI fasse les vérifications et que son résultat décide si la PR peut être mergée.
+
+Le cycle que je veux est assez simple :
+
+1. Vérifier la fraîcheur des sources quand le changement en dépend.
+2. Construire et tester les ressources sélectionnées dans une cible CI isolée.
+3. Valider la complétude de la documentation.
+4. Bloquer le merge si un contrôle obligatoire échoue.
+
+[`dbt build`](https://docs.getdbt.com/reference/commands/build) exécute les modèles et leurs tests dans l’ordre des dépendances. Pour les tests de données qui doivent bloquer le merge, je garde une sévérité d’erreur et je relis les [seuils ou réglages de warning](https://docs.getdbt.com/reference/resource-configs/severity). Transformer un échec gênant en warning, ce n’est pas corriger les données.
+
+### Sélectionner les changements, puis utiliser `--defer`
+
+Sur un gros DAG, tout reconstruire à chaque PR finit par coûter cher. Voici une commande CI illustrative, avec un manifest de production sauvegardé dans `artifacts/prod/` :
+
+```bash
+dbt build --target ci --select "state:modified+" \
+  --state artifacts/prod --defer
+```
+
+Chaque morceau a son rôle. `state:modified` compare au manifest sauvegardé. Le [`+`](https://docs.getdbt.com/reference/node-selection/graph-operators) à la fin ajoute les descendants en aval, pas seulement le modèle suivant. [`--defer`](https://docs.getdbt.com/reference/node-selection/defer) résout les dépendances non sélectionnées qui s’y prêtent vers l’environnement sauvegardé, plutôt que de t’obliger à les reconstruire.
+
+`--defer` ne sélectionne pas les modèles modifiés. Par défaut, une relation non sélectionnée déjà présente dans la cible CI peut encore être utilisée ; `--favor-state` change cette préférence. Un test avec plusieurs parents peut aussi lire à la fois en CI et en prod, donc je vérifie ce qu’il va vraiment comparer. Un manifest sauvegardé ne garantit pas un run petit ou autonome.
+
+Je garde cet état sauvegardé hors du `target/` du run en cours. Le [DAG et les cibles décrits dans mon article sur dbt comme infrastructure]({{< ref "/blog/dbt-data-infrastructure-as-code/" >}}) rendent cette séparation plus facile à tenir.
+
+### Garder les ressources Snowflake de CI sous contrôle
+
+Quelques points méritent une règle explicite pour la CI.
+
+**Dimensionner le warehouse selon le travail.** Partir petit, puis mesurer le build et sa concurrence. Un XS n’est pas une réponse universelle, surtout quand plusieurs PR tournent ensemble. Les tests exécutent toujours du SQL ; une déclaration YAML courte ne fait pas disparaître son coût d’entrepôt.
+
+**Utiliser du stockage transient quand les données sont jetables.** Les [databases et tables transient](https://docs.snowflake.com/en/user-guide/tables-temp-transient) évitent le stockage Fail-safe, mais offrent aussi moins de protection pour la récupération. Ça convient à des données CI que je peux reconstruire. Pas à une optimisation gratuite sur des données que je dois garder.
+
+**Contrôler explicitement les refresh des Dynamic Tables.** Le [target lag](https://docs.snowflake.com/en/user-guide/dynamic-tables/target-lag) est un objectif de fraîcheur, pas un intervalle de refresh ni un interrupteur. Un lag très long ne garantit pas l’absence de refresh automatique. Si un contrôle CI a besoin d’un contenu fixe, il faut initialiser les tables CI, attendre la fin de ce chargement, puis [suspendre explicitement les refresh planifiés](https://docs.snowflake.com/en/user-guide/dynamic-tables/manage#suspend-a-dynamic-table) avant de les vérifier. La suspension touche aussi les Dynamic Tables en aval ; la séquence CI doit tenir compte du graphe.
+
+**Nettoyer même quand le job plante.** Supprimer la database CI dédiée dans un step de cleanup, et vérifier les databases abandonnées. Un pipeline en erreur ne devrait pas laisser ses Dynamic Tables se rafraîchir jusqu’à ce que quelqu’un remarque la facture.
+
+## Les erreurs qui m’ont convaincu
+
+**Le null de trop.** Une colonne boolean contenait `NULL` en plus de `true` et `false`. C’est autorisé par un type SQL nullable, mais ce n’était pas le contrat qu’on voulait. Le code source traitait l’absence comme faux ; la transformation ne faisait pas forcément pareil. Sur un booléen obligatoire, `not_null` rend cette exigence explicite. Si j’utilise aussi `accepted_values` pour des booléens, je mets `quote: false` pour ne pas les traiter comme des strings.
+
+**L’identifiant en double.** Un bug de migration a dupliqué des enregistrements dans un système source. Sans test d’unicité, les doublons pouvaient traverser les transformations sans que rien ne crie. Une petite vérification sur l’identifiant était plus utile qu’un autre après-midi à fixer le rapport final.
+
+## Ce que j’en retiens
+
+Je commence toujours par les vérifications banales. Un identifiant obligatoire reçoit `not_null` et `unique`. Un ensemble fermé de statuts reçoit `accepted_values`, avec `not_null` si l’absence est invalide. Une relation est vérifiée là où le modèle s’appuie dessus. Choisir les tests qui décrivent le vrai rôle de la colonne, puis les exécuter.
+
+Les tests plus complexes viennent après, quand je peux lire ce qu’ils font. C’est là où j’ai appris à mes dépens : déléguer leur génération à un LLM sans vraie relecture peut produire de la fausse confiance. J’ai relu des tests générés que j’avais laissés passer au merge et trouvé des logiques inversées, la mauvaise table référencée, des seuils sans sens métier. Ils tournaient. Ils passaient. Ils ne testaient pas ce que je pensais qu’ils testaient.
+
+La règle que j’applique maintenant est simple : des vérifications déclaratives que je comprends, imposées en CI. Des tests custom quand j’ai le temps de les lire ligne par ligne. Je préfère moins d’assertions auxquelles je fais confiance qu’une longue liste de checks verts que personne ne sait expliquer.

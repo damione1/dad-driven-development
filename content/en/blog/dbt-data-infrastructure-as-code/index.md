@@ -1,32 +1,39 @@
 ---
-title: "dbt: Treating Your Data Transformations Like Infrastructure"
+title: "dbt and Terraform: My Snowflake Infrastructure as Code"
 date: 2025-12-26
+lastmod: 2026-10-28
 draft: false
-description: "dbt applies the same rigor to your data pipelines that Terraform applies to infrastructure - declarative approach, DAG, Dynamic Tables, manifest and comparison with SQLMesh."
+description: "How I split Snowflake between Terraform and dbt: models, Dynamic Tables, isolated targets, CI selection and the limits of manifest.json."
 tags: ["dbt", "Snowflake", "Data Engineering", "SQL"]
 categories: ["Data Engineering"]
 images: ["dbt-data-infrastructure-as-code-featured.jpg"]
 ---
 
-Snowflake is fundamentally SQL-first. That's its strength: everything is driven by SQL, from grants to object creation to transformations. Infrastructure, we've seen how to tame it with Terraform in [the previous article]({{< ref "/blog/snowflake-terraform-infrastructure-as-code/" >}}). But data transformations fall into a blind spot. SQL scripts scattered everywhere, no tests, no serious versioning, one colleague who knows what order to run things in.
+I use Terraform to provision my Snowflake environment and dbt to describe the transformations inside it. Databases, roles and warehouses on one side; models, tests and documentation on the other. Both are code, reviewed in git and deployed through a pipeline.
 
-That's where dbt comes in. And it's no coincidence that both tools work so naturally together: Snowflake abstracts physical infrastructure, dbt abstracts transformation orchestration. Both are declarative, SQL-first, designed so that code is the source of truth. dbt isn't a generic data transformation framework, it's the tool that completes Snowflake where Snowflake doesn't complete itself: the organization, tests, documentation and reproducible deployment of all that SQL.
+Snowflake is fundamentally SQL-first. That's its strength: grants, objects, transformations, all accessible through SQL. In [the Terraform article]({{< ref "/blog/snowflake-terraform-infrastructure-as-code/" >}}), I explained how I stopped managing the infrastructure with a pile of SQL scripts. The transformations deserved the same treatment.
 
-## The Problem with SQL Transformation Scripts
+Otherwise, you get SQL files scattered everywhere, a README explaining the order and one colleague who knows which script really has to run first. I don't want the deployment plan living in that colleague's head.
 
-Before dbt, the classic data pipeline looked like this: numbered SQL scripts, some scheduler, and a README explaining what order to run things. Or worse, stored procedures in Snowflake with business logic buried inside.
+## dbt vs Terraform: the boundary I choose
 
-The problem is the same as with infrastructure SQL scripts: DDLs accumulate. You have `create_orders_table.sql`, then `add_status_column.sql`, then `alter_orders_add_shipping_address.sql`. After a while, nobody knows what the table is *supposed* to be. You have to run all the scripts in order to reconstruct the real state, and you hope none of them are missing.
+The two tools complement each other in this stack. Here's where I put the responsibility:
 
-And when you want to add a column to a 5-stage pipeline (staging, enrichment, aggregation, export, report), you have to open 5 files, add the column in each one, then coordinate the deployment in the right order in production. Without a framework, you manage this by hand. And you almost always forget a model somewhere.
+| Concern | What I use |
+|---|---|
+| Databases, warehouses, roles and their privileges | Terraform |
+| Transformation SQL, model dependencies and materializations | dbt |
+| Data tests, descriptions and project lineage | dbt |
+| Continuous refresh of deployed Dynamic Tables | Snowflake's scheduler, when configured |
+| Reviewing and deploying changes | CI around those tools |
 
-As for tests: writing a non-null test on a column without a framework means writing a `SELECT COUNT(*) WHERE col IS NULL` and checking the result is 0. Doable once. Painful to maintain across 200 columns.
+That's an ownership choice, not a claim that their capabilities never overlap. dbt can manage some grants; Terraform can manage database objects. The important rule is that the same object doesn't have two tools both trying to be its authority.
 
-## What dbt Changes Fundamentally
+## From SQL scripts to dbt models and a DAG
 
-[dbt](https://www.getdbt.com/) (data build tool) takes a simple idea: data transformations are code. And code is managed with the same practices as everything else: version control, tests, documentation, CI/CD.
+Before that structure, DDL accumulates. `create_orders_table.sql`, then `add_status_column.sql`, then `alter_orders_add_shipping_address.sql`. After a while, reconstructing what the table is supposed to be starts to look like archaeology.
 
-In practice, you write models: `.sql` files that each define a table or view. A model references other models with `{{ ref('model_name') }}` syntax. dbt automatically resolves dependencies and builds a [DAG](https://docs.getdbt.com/terms/dag) (directed acyclic graph) of your transformations.
+[dbt models](https://docs.getdbt.com/docs/build/models) give the transformation a home. A SQL model describes a result; its materialization determines whether dbt builds a view, a table or another supported object. References to other models establish the dependencies.
 
 ```sql
 -- models/silver/orders_enriched.sql
@@ -41,39 +48,31 @@ left join {{ ref('stg_customers') }} c on o.customer_id = c.customer_id
 left join {{ ref('stg_products') }} p on o.product_id = p.product_id
 ```
 
-dbt knows that `orders_enriched` depends on `stg_orders`, `stg_customers` and `stg_products`. It builds them in the right order, automatically. When you add a column to `stg_orders`, it's available in all downstream models without you having to coordinate anything.
+[`ref`](https://docs.getdbt.com/reference/dbt-jinja-functions/ref) resolves the relation name and gives dbt the dependency. It knows that this model depends on those three staging models, and can order selected builds accordingly.
 
-## The Terraform Analogy
+It doesn't propagate every new column through the SQL for us. If I add `shipping_country` upstream, this explicit `SELECT` still needs to select it downstream. What disappears is the handwritten ordering of the scripts, not the need to decide what each model contains.
 
-The parallel with Terraform isn't superficial. Both tools share the same fundamental philosophy:
+The tests and descriptions live next to this code. I cover those separately in [the YAML testing article]({{< ref "/blog/dbt-tests-constraints-yml/" >}}) and [the documentation and governance article]({{< ref "/blog/dbt-documentation-governance-yml/" >}}).
 
-**Desired state, not steps.** You don't say "run this transformation after that one." You describe what each table should contain, and dbt figures out how to get there.
+## Where the Terraform analogy holds
 
-**Declarative.** Your code describes the result, not the process. `SELECT ... FROM ref('source')` says "this table contains these columns calculated from this source," not "take this table, join it with that, filter this."
+The parallel is useful: describe the intended result, version it, review the change and let a tool carry it through the dependency graph.
 
-**Reproducible.** `dbt build` rebuilds everything from scratch, in the right order, every time. Like `terraform apply` rebuilds your infrastructure from HCL files.
+But neither command means “destroy everything and rebuild it.” [`dbt build`](https://docs.getdbt.com/reference/commands/build) runs the selected resources and their tests in DAG order, according to their materializations. An incremental model can update incrementally. A Dynamic Table has its own deployment and refresh behavior. Selection and `--full-refresh` change what happens.
 
-**Versioned.** Every change to a transformation is a commit. You can see who changed what, why, and roll back.
+Similarly, Terraform plans changes against the infrastructure it manages, rather than recreating the entire stack on every `apply`.
 
-The analogy has one important limit though: dbt has no remote state. If someone deletes a table in Snowflake manually, dbt doesn't know about it. The next `dbt run` will simply recreate it without flagging the drift. Terraform, on the other hand, would detect the gap between the real state and the desired state and propose correcting it. This isn't a critical flaw, but worth keeping in mind: dbt is declarative about what it creates, not about what exists.
+The bigger distinction is [Terraform's state](https://developer.hashicorp.com/terraform/language/state/purpose): it records the association between configured resources and real objects. A normal [`terraform plan`](https://developer.hashicorp.com/terraform/cli/commands/plan) refreshes information about those objects and proposes changes.
 
-## Extensibility: What More Than Compensates
+dbt's project artifacts don't provide that same general infrastructure reconciliation. They are useful for describing the project and comparing versions. They aren't proof that nobody changed a table by hand yesterday.
 
-That lack of remote state is one of the few areas where Terraform does better. But dbt compensates with something different: remarkable extensibility.
+I still think of dbt as infrastructure as code. I just don't ask the analogy to do work the tool doesn't do.
 
-The [dbt Hub](https://hub.getdbt.com/) aggregates hundreds of community packages. Additional tests, utility macros, integrations with specific sources. [dbt-utils](https://github.com/dbt-labs/dbt-utils) is probably in every serious dbt project: it adds dozens of macros and tests you wouldn't want to write yourself.
+## Dynamic Tables: declare the model, choose who refreshes it
 
-But the real power is the [Jinja macro system](https://docs.getdbt.com/docs/build/jinja-macros). Everything dbt does internally, you can do too. Which means features reserved for dbt Cloud are often reproducible in dbt Core with a few macros.
+[Snowflake Dynamic Tables](https://docs.snowflake.com/en/user-guide/dynamic-tables-intro) are where this way of thinking becomes particularly useful. We declare a query, and Snowflake can maintain its result through refreshes instead of us scheduling every transformation as a separate batch.
 
-Breaking change detection in schemas? We cover that in [a later article]({{< ref "/blog/dbt-guard-package-python/" >}}), and it's exactly this kind of feature you can implement yourself. Alerting on source freshness? Macros. Automatic documentation generation? Macros. dbt Core isn't a stripped-down version of dbt Cloud, it's a foundation on which you build what you need.
-
-## dbt as Infrastructure, Not Just an ETL Runner
-
-Many teams use dbt as an ETL runner: they materialize tables and run `dbt run` every hour in Airflow or Prefect. That's a valid use case. But it's far from exhausting what dbt can do.
-
-Snowflake has a concept that changes the equation: [Dynamic Tables](https://docs.snowflake.com/en/user-guide/dynamic-tables-intro). Instead of materializing a table and refreshing it manually, you declare a Dynamic Table with a target lag ("this table must be no more than 1 hour stale"). Snowflake manages the refresh automatically, propagating changes through the DAG.
-
-Combined with dbt, this means you no longer need an external orchestrator to manage refreshes. You declare your models as Dynamic Tables in dbt, deploy, and Snowflake handles the rest. dbt becomes what it truly is: a tool for declaring data infrastructure, not a scheduler.
+The [dbt Snowflake adapter](https://docs.getdbt.com/reference/resource-configs/snowflake-configs) supports a `dynamic_table` materialization. This example uses the adapter's dbt 1.12+ scheduling configuration and deliberately selects Snowflake-managed refresh:
 
 ```yaml
 # dbt_project.yml
@@ -81,75 +80,78 @@ models:
   my_project:
     silver:
       +materialized: dynamic_table
-      +target_lag: '1 hour'
       +snowflake_warehouse: TRANSFORMING_L
+      +scheduler: ENABLE
+      +target_lag: '1 hour'
 ```
 
-## Targets: One Environment per Context
+The model's SQL still defines the data. The configuration defines how that result is maintained. A [target lag](https://docs.snowflake.com/en/user-guide/dynamic-tables/target-lag) is a freshness target relative to the underlying data, not “run exactly once an hour” or a guarantee that the target will always be met.
 
-One of dbt's most practical concepts is the [targets system](https://docs.getdbt.com/docs/core/connect-data-platform/connection-profiles). A target is a deployment configuration: which database, which schema, which warehouse to use.
+Scheduling and refresh mode are different decisions. Snowflake can use full or incremental refresh where the query and configuration support it. The adapter version matters too: current configurations distinguish Snowflake-managed scheduling from dbt-managed refresh. I would check the installed adapter before copying a configuration from a different release.
 
-In practice, each developer has a default `dev` target pointing to their own isolated database, with a small warehouse to avoid burning credits unnecessarily:
+For this part of the DAG, Snowflake can take over the recurring refresh work. We still need to deploy changes, run the appropriate tests, check source freshness and monitor failures. It doesn't make the rest of the pipeline disappear. I go into the CI side in [the article on dbt tests]({{< ref "/blog/dbt-tests-constraints-yml/" >}}).
+
+## Targets: one environment per context
+
+A [dbt target](https://docs.getdbt.com/docs/local/profiles.yml) chooses connection settings for a run. I want a developer's default to point at an isolated development database, with a warehouse sized for that work.
+
+Here's the environment part of a `profiles.yml`. This is an excerpt: account, user and authentication settings still have to be supplied using the Snowflake adapter's supported configuration.
 
 ```yaml
-# profiles.yml
 my_project:
   target: dev
   outputs:
     dev:
+      type: snowflake
       database: DEV_JEAN
       schema: silver
       warehouse: DEV_XS
+      role: DBT_DEV
     prod:
+      type: snowflake
       database: PROD
       schema: silver
       warehouse: TRANSFORMING_L
+      role: DBT_PROD
 ```
 
-When Jean runs `dbt run`, he deploys to `DEV_JEAN.silver`. He can't accidentally overwrite production. Deploying to prod requires being explicit: `dbt run --target prod`. It's a deliberate opt-in, not the default behavior.
+`dbt run` uses the default target; `dbt run --target prod` explicitly selects production. That's a useful guardrail. The protection against writing to production comes from Snowflake privileges and the credentials used by the job, not from naming a target `dev`.
 
-What's elegant is that dbt lets you [override the database, schema, and even the warehouse](https://docs.getdbt.com/docs/build/custom-schemas) at multiple levels: project-wide, folder-level, individual model. You can have a specific model that always runs on a dedicated warehouse, regardless of the target. Configuration composes.
+The project can also override database and schema settings. I want those overrides reviewed with the same care as the SQL. An isolated development target is only useful if the models actually stay inside the boundary we've given it.
 
-## Precise Selection in the DAG
+## Select the part of the DAG that needs work
 
-Once you have a DAG with 200 models, you don't want to systematically rebuild everything. dbt has an expressive [selection system](https://docs.getdbt.com/reference/node-selection/syntax) for targeting exactly what you need.
-
-The `+` syntax controls direction in the DAG:
+Once a project has hundreds of models, rebuilding all of them for each change is rarely what I want. The [graph operators](https://docs.getdbt.com/reference/node-selection/graph-operators) make the scope explicit:
 
 ```bash
 # Just the model
 dbt run --select orders_enriched
 
-# The model and everything upstream (its dependencies)
+# The model and its upstream dependencies
 dbt run --select +orders_enriched
 
-# The model and everything downstream (what depends on it)
+# The model and all downstream descendants
 dbt run --select orders_enriched+
 
-# The model, its dependencies AND its dependents
+# Both directions
 dbt run --select +orders_enriched+
 ```
 
-You can also select by tag. If you tag your retail models:
+Tags give another entry point. A model with `{{ config(tags=['retail', 'orders']) }}` can be selected with `dbt run --select tag:retail`. We still have to choose whether to include its dependencies.
 
-```yaml
--- models/silver/orders_enriched.sql
-{{ config(tags=['retail', 'orders']) }}
-```
-
-You can then target the entire retail domain in one command:
+In CI, a previous production manifest lets us select changed resources. With a separately configured, clean `ci` target, a command can look like this:
 
 ```bash
-dbt run --select tag:retail
+dbt build --select "state:modified+" --state artifacts/prod --defer --target ci
 ```
 
-Combined with `state:modified`, this gives very precise control over what runs in CI: only the modified models and their direct dependents.
+`state:modified+` selects modified resources and all downstream descendants, not just direct children. [`--defer`](https://docs.getdbt.com/reference/node-selection/defer) is the separate mechanism that can resolve unselected upstream references to existing production relations. Existing relations in the current target can affect that resolution, so keeping CI isolated matters. The saved production artifacts live outside the current run's `target/`, where they won't be overwritten.
 
-## Sources and Exposures: The Two Ends of the DAG
+This is the part I like: the scope is written down. We can inspect it, review it and change it. “Only run what changed” stops being an assumption buried in the scheduler.
 
-dbt manages not only intermediate transformations but also both ends of the pipeline.
+## Sources and exposures: both ends of the lineage
 
-**Sources** are tables you don't control: your raw data arriving via Fivetran, Airbyte, or another replication tool. You [declare them in YAML](https://docs.getdbt.com/docs/build/sources):
+A [source declaration](https://docs.getdbt.com/docs/build/sources) gives a name to data that already arrives through another system. It doesn't load that data for us.
 
 ```yaml
 sources:
@@ -162,11 +164,11 @@ sources:
       - name: products
 ```
 
-This lets you reference them with `{{ source('shopify', 'orders') }}` in your models, associate tests with them, and monitor their freshness. If Shopify data hasn't been updated in 6 hours, dbt can alert you before your reports go stale.
+Models can reference `{{ source('shopify', 'orders') }}`. We can declare tests and configure freshness checks for those sources, then actually run `dbt source freshness` in the pipeline. A source declaration alone isn't an alerting service.
 
-These source descriptions also integrate with Snowflake Horizon: the metadata you declare in dbt surfaces in the [Snowflake data catalog](https://docs.snowflake.com/en/user-guide/snowflake-horizon), visible to everyone with access to the instance.
+The same boundary applies to documentation. Descriptions in dbt help its own documentation; pushing comments onto source tables needs a separate implementation. [`persist_docs`]({{< ref "/blog/dbt-documentation-governance-yml/" >}}) handles supported model descriptions, not source comments or custom governance tags.
 
-**Exposures** are the other end: consumers of your data that dbt doesn't manage. A Tableau dashboard, an API, a file exported to a partner. You [declare them too](https://docs.getdbt.com/docs/build/exposures):
+[Exposures](https://docs.getdbt.com/docs/build/exposures) describe the consumers at the other end: a dashboard, an API, an export.
 
 ```yaml
 exposures:
@@ -174,68 +176,46 @@ exposures:
     type: dashboard
     owner:
       name: BI Team
+      email: analytics@example.com
     depends_on:
       - ref('daily_revenue')
       - ref('top_products')
 ```
 
-This completes the lineage: you can see in the DAG not only how data transforms, but also where it ends up. When you modify `daily_revenue`, dbt knows the Tableau dashboard depends on it and can alert you.
+Now the project records that the dashboard depends on those models. That makes an impact review possible. Sending a notification when they change is something the workflow or an integration still has to do. The YAML doesn't subscribe the BI team to emails by itself.
 
-## Complementary Assets: Seeds and UDFs
+## Seeds, functions and macros
 
-Two elements worth mentioning to complete the picture.
+[Seeds](https://docs.getdbt.com/docs/build/seeds) are CSV files dbt can load as tables: small reference lists, mappings, static configuration. I prefer seeing those changes in the repo over wondering which copy of a spreadsheet the job picked up.
 
-**[Seeds](https://docs.getdbt.com/docs/build/seeds)** are CSV files that dbt manages as tables. Reference tables, mappings, static configurations. Instead of having a CSV file somewhere on a server or in a Google Sheet, you version it in the dbt repo and dbt creates the corresponding table in Snowflake.
+[User-defined functions](https://docs.getdbt.com/docs/build/udfs) also have native support from dbt 1.11 onward, with support depending on the adapter and function language. They no longer belong in a blanket “dbt can't manage this” category. Older projects may still deploy functions through hooks or macros; the version we run determines the options.
 
-```
-seeds/
-  product_categories.csv
-  country_codes.csv
-  shipping_carriers.csv
-```
+The [Jinja macro system](https://docs.getdbt.com/docs/build/jinja-macros) and packages such as [dbt-utils](https://github.com/dbt-labs/dbt-utils) are another reason the tool suits me. I can reuse a transformation or a test, and add project-specific checks when the built-in behavior doesn't cover the requirement. That's a useful extension point, not a promise to reproduce every hosted-platform feature with a few lines of Jinja.
 
-**Snowflake UDFs** (User Defined Functions) aren't natively managed by dbt, but you can deploy them via [pre-hooks or macros](https://docs.getdbt.com/docs/build/jinja-macros). This is the limit of the infrastructure-as-code metaphor: certain Snowflake objects remain in Terraform territory.
+## The manifest: project state, not warehouse state
 
-## The Manifest: The Compiled Plan of Your Stack
+[`dbt parse`](https://docs.getdbt.com/reference/commands/parse) parses and validates the project, and writes `manifest.json`. It doesn't connect to the warehouse or compile the model SQL.
 
-When you run [`dbt parse`](https://docs.getdbt.com/reference/commands/parse), dbt compiles your entire project and produces a [`manifest.json`](https://docs.getdbt.com/reference/artifacts/manifest-json). This is the central artifact: a complete, machine-readable representation of everything your project knows how to do.
+The [manifest](https://docs.getdbt.com/reference/artifacts/manifest-json) describes resources, configurations, declared columns and dependencies. Commands that execute nodes can add compiled SQL for those nodes. It is an artifact of what dbt understands about the project, not a live inventory of everything in Snowflake.
 
-The manifest contains models, their declared columns, their dependencies, tests, sources, exposures. Everything.
+That's still extremely useful. We can compare versions, select modified resources and inspect contracts. It's what I use in [dbt-guard]({{< ref "/blog/dbt-guard-package-python/" >}}) to look for breaking changes before deployment. But a manifest comparison and an infrastructure drift check answer different questions.
 
-It's the equivalent of the Terraform state for your data. And like the Terraform state, it can be used for comparisons: what changed between the previous version and the current version? That's exactly what we'll leverage in [a later article]({{< ref "/blog/dbt-guard-package-python/" >}}) to detect breaking changes before they reach production.
+## Why I chose dbt rather than SQLMesh
 
-## Why This Changes Team Dynamics
+[SQLMesh](https://sqlmesh.readthedocs.io/en/stable/) was on my list when I evaluated this approach. Its [plans and change categories](https://sqlmesh.readthedocs.io/en/stable/concepts/plans/) make changes and backfills explicit. It also has a [dbt compatibility mode](https://sqlmesh.readthedocs.io/en/stable/integrations/dbt/), with limitations that need checking against the actual project.
 
-Before dbt, transformations were often owned by one person. Someone knew what order to run the scripts, which tables depended on what, where the deduplication logic lived. The knowledge was tribal.
+I chose dbt for the ecosystem I wanted to work in: packages on [dbt Hub](https://hub.getdbt.com/), the existing integrations in my stack and the familiarity of the workflow. That was a practical choice, not a benchmark proving one tool wins every category.
 
-With dbt, any data engineer can open the repo, see the DAG, understand the dependencies, modify a model, and deploy to their dev environment without risk. The knowledge is in the code.
+There are also several places to run dbt. [dbt Projects on Snowflake](https://docs.snowflake.com/en/user-guide/data-engineering/dbt-projects-on-snowflake) provides managed runtimes inside Snowflake, with its own development and scheduling options. That's a specific execution product. Using the dbt Snowflake adapter from a laptop, CI runner or hosted dbt service doesn't by itself mean the dbt runtime is inside Snowflake.
 
-It's the same gain we had with Terraform for infrastructure. We go from "ask the person who knows" to "read the code."
+SQLMesh could also have been a reasonable choice. Choosing infrastructure includes choosing who will understand it, how it will be deployed and which parts we'll have to maintain ourselves.
 
-## Why dbt and Not SQLMesh?
+## What this changes for the team
 
-When I started evaluating tools to manage my transformations declaratively, [SQLMesh](https://sqlmesh.com/) was on my list. It's a serious tool: open source, Apache 2.0, backwards-compatible with existing dbt projects, with interesting concepts like automatic breaking change detection and native incremental evaluation.
+The part I carry over from software development is simple: someone else should be able to open the repo and understand how the system is meant to work.
 
-On paper, SQLMesh is technically more rigorous than dbt on several points. But I chose dbt for one simple reason: network effects.
+Terraform declares the environment. dbt declares the transformations and their checks. Snowflake executes the SQL and, where we've chosen Dynamic Tables, manages their refreshes. Each layer has a responsibility we can point to, and changes pass through review instead of a manual deployment on Friday night.
 
-dbt is by far the most widely used tool in the data ecosystem. Which means:
-- Hundreds of packages on the [dbt Hub](https://hub.getdbt.com/): tests, macros, utilities already written
-- An active community with answers to almost every problem you'll encounter
-- Native integrations in all stack tools: Fivetran, Hightouch, Metabase, Tableau, and essentially all data catalogs
-- Data engineers who already know dbt when they join a team
+The knowledge doesn't become complete just because it's in code. But the dependency graph, the configuration and the tests give the next person something much better than “ask the colleague who knows.”
 
-And since 2024, Snowflake has formalized this partnership with an even deeper integration: the [dbt Snowflake Native App](https://docs.getdbt.com/docs/cloud-integrations/snowflake-native-app). You can now orchestrate and monitor your dbt jobs directly from Snowflake, without external infrastructure. dbt runs inside your Snowflake instance, not alongside it.
-
-SQLMesh would probably have done the job just as well. But when you choose infrastructure, you also choose an ecosystem. And the dbt ecosystem is unbeatable right now.
-
-## dbt + Snowflake: The Duo for a Dev-Minded Data Engineer
-
-What makes this combination particularly solid is that both tools share the same philosophy and complement each other without overlapping.
-
-Terraform declares infrastructure: databases, schemas, roles, permissions, masking policies. dbt declares transformations: models, tests, documentation, lineage. Both are code, versioned in git, deployed via CI pipelines, with environments isolated per developer.
-
-But beyond the shared philosophy, the integration is concrete. Snowflake Dynamic Tables materialize natively in dbt. Column descriptions in your YAML surface in Snowflake Horizon via `persist_docs`. And since 2024, dbt can run directly in your Snowflake instance via the [dbt Snowflake Native App](https://docs.getdbt.com/docs/cloud-integrations/snowflake-native-app), without external infrastructure to manage.
-
-The complete stack looks like this: Terraform manages what's above the data, dbt manages what's inside it, and Snowflake is the foundation both rely on. Each layer has its responsibility, each layer is code. For someone coming from software development, this is exactly what a data stack should look like. Not SQL scripts in a shared folder, not tribal knowledge, not manual deployment on a Friday night.
-
-The rigor we apply to application code has every reason to apply to data too. dbt is the tool that makes this possible, and Snowflake is the platform where that rigor makes complete sense.
+The rigor we apply to application code has every reason to apply to data too. That's what I want from this stack.

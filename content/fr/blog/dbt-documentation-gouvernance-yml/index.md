@@ -1,44 +1,67 @@
 ---
-title: "dbt : Quand tes fichiers YAML deviennent ta gouvernance de données"
+title: "Documentation dbt : du YAML à la gouvernance"
 translationKey: "dbt-documentation-governance"
 date: 2026-01-16
-lastmod: 2026-10-27
+lastmod: 2026-10-28
 draft: false
-description: "Transformer les YAML dbt d'une formalité optionnelle en source de vérité pour la gouvernance - classifications PII, persist_docs, masquage automatique et enforcement en CI."
+description: "Descriptions YAML, persist_docs et contrôles CI : comment je documente mes modèles dbt dans Snowflake et relie leurs métadonnées à la gouvernance."
 tags: ["dbt", "Snowflake", "Data Governance", "Data Engineering"]
 categories: ["Data Engineering", "Data Governance"]
 images: ["dbt-documentation-governance-yml-featured.jpg"]
 ---
 
-La documentation, c'est le truc que personne ne veut faire. Surtout en data. T'as des centaines de colonnes dans des dizaines de tables, et quelqu'un te demande "c'est quoi le champ `status` dans la table `orders` ?" Et la réponse honnête, c'est souvent "euh... un enum je pense qui veut probablement dire X."
+Dans mes projets dbt, le YAML rassemble les descriptions, les tests et les responsables de la donnée. J’utilise `persist_docs` pour faire remonter les descriptions des modèles dans Snowflake, puis des contrôles CI pour éviter que la doc décroche tranquillement du code. La gouvernance vient de ce qu’on construit autour de ces métadonnées. Elle n’arrive pas parce qu’un fichier est en YAML.
 
-## Le problème de la documentation data
+La documentation reste le truc que personne n’a envie de faire. Surtout en data. Tu as des centaines de colonnes dans des dizaines de tables, et quelqu’un demande ce que veut dire le champ `status` dans `orders`. La réponse honnête, c’est souvent « euh... un enum qui doit probablement vouloir dire X ».
 
-Dans un projet dbt classique, la documentation est optionnelle. Tu peux écrire tes modèles SQL, les déployer, et ne jamais documenter une seule colonne. dbt ne t'oblige à rien.
+C’est ce problème-là que je veux faire résoudre au YAML. Un endroit pour écrire ce qu’on sait, à côté du code qui s’en sert, et un build qui remarque quand on arrête de le faire.
 
-Le résultat, c'est prévisible : des schémas Snowflake avec des centaines de colonnes dont personne ne connaît la signification exacte. Des noms de colonnes hérités d'un système source vieux de 10 ans. Des colonnes qui s'appellent `type` ou `status` sans aucune indication de ce que ça veut dire.
+## La documentation dbt commence par les descriptions
 
-Et quand un analyste marketing veut comprendre les données, il doit soit déranger quelqu'un qui a la connaissance tribale, soit deviner. Les deux sont problématiques.
+Un projet dbt peut avoir du SQL qui tourne très bien et presque aucune documentation utile. Une colonne appelée `type` ne dit toujours pas à un analyste si c’est une catégorie de client, un moyen de paiement ou un reste d’un système source dont personne ne se souvient.
 
-## Les YAML de dbt : plus qu'une formalité
+Le mécanisme de base est simple : des [descriptions de modèles et de colonnes](https://docs.getdbt.com/reference/resource-properties/description) dans un fichier de propriétés comme `schema.yml`. Le nom du fichier n’est pas le contrat. Son contenu, oui.
 
-dbt a un mécanisme de documentation intégré : les fichiers `schema.yml` (ou peu importe comment tu les nommes). Tu peux y décrire chaque modèle, chaque colonne, avec du texte libre. La plupart des équipes s'en servent peu ou pas.
+Un petit exemple, avec les conventions de responsabilité et de classification que je veux à côté du texte :
 
-Mais si tu prends le temps de bien structurer ces fichiers, ils deviennent bien plus qu'une documentation passive. Ils deviennent la source de vérité pour la gouvernance de tes données.
+```yaml
+version: 2
+models:
+  - name: dim_customers
+    description: "Une ligne par client, y compris les comptes inactifs."
+    config:
+      meta:
+        owner: data-platform
+    columns:
+      - name: customer_id
+        description: "Identifiant client stable provenant du système source."
+      - name: email
+        description: "Email de contact du client ; peut être absent."
+        config:
+          meta:
+            classification: pii
+            semantic_type: email
+            steward: customer-operations
+```
 
-L'idée, c'est d'utiliser le champ `meta` de chaque colonne pour stocker des métadonnées structurées :
+Ces clés `meta`, ce sont nos conventions. dbt accepte des [métadonnées personnalisées](https://docs.getdbt.com/reference/resource-configs/meta) ; il ne décide pas ce que `pii` veut dire et ne fait pas respecter une politique de confidentialité à notre place. La syntaxe actuelle place les métadonnées de colonne sous `config.meta` (changement en dbt 1.10, rétroporté en 1.9).
 
-- **Classification** : est-ce que cette colonne contient de l'information personnelle (PII), financière, confidentielle ?
-- **Catégorie sémantique** : est-ce un email, un montant, une adresse, un identifiant ?
-- **Sensibilité** : haute, moyenne, basse ?
-- **Obligations réglementaires** : LPRPDE, GDPR, données consommateurs, e-commerce ?
-- **Rétention** : combien de temps garder ces données ?
+Je peux aussi y mettre la sensibilité, une règle de rétention ou un responsable métier. Ce qui sert, c’est d’avoir un vocabulaire sur lequel l’équipe s’est mise d’accord, plutôt que cinq orthographes de « confidentiel » et une page de wiki que personne ne met à jour.
 
-Quand chaque colonne a ses métadonnées, tu passes d'une documentation passive à une gouvernance active.
+## Générer la doc dbt, puis la rendre utile
 
-## persist_docs : du YAML à Snowflake
+Pour un site de documentation local, les [commandes dbt docs](https://docs.getdbt.com/reference/commands/cmd-docs) donnent un endroit où lire ces descriptions :
 
-Le truc qui fait la différence, c'est [`persist_docs`](https://docs.getdbt.com/reference/resource-configs/persist_docs). C'est une option dbt qui prend tes descriptions YAML et les pousse comme commentaires sur les objets Snowflake. Quand tu actives ça :
+```bash
+dbt docs generate
+dbt docs serve
+```
+
+Ça rend le projet navigable. Ça ne rend pas les descriptions justes. « Identifiant client » est techniquement une description ; savoir si elle explique la différence entre un compte et une personne, c’est une autre question. Générer un site et relire son contenu sont deux tâches différentes.
+
+## persist_docs : du YAML aux commentaires Snowflake
+
+[`persist_docs`](https://docs.getdbt.com/reference/resource-configs/persist_docs), c’est l’option qui évite aux descriptions de rester enfermées dans dbt. Dans `dbt_project.yml` :
 
 ```yaml
 models:
@@ -48,75 +71,64 @@ models:
       columns: true
 ```
 
-Chaque description de modèle et de colonne dans tes YAML devient un commentaire visible dans Snowflake. Pas besoin d'un outil externe. Quelqu'un qui navigue les données dans Snowsight voit directement les descriptions que t'as écrites dans dbt.
+Pour les matérialisations de modèles prises en charge, dbt persiste les descriptions des relations et colonnes comme commentaires dans l’entrepôt lorsqu’il construit les objets. Quelqu’un qui les consulte dans Snowsight peut lire les descriptions là aussi. On arrête d’entretenir une deuxième copie à la main.
 
-Cela concerne les relations et colonnes des modèles configurés ci-dessus. dbt n'implémente pas `persist_docs` pour les sources : les commentaires des tables sources demandent un script ou une macro séparée utilisant les [instructions COMMENT de Snowflake](https://docs.snowflake.com/en/sql-reference/sql/comment), avec les droits nécessaires sur les objets. Les tags de classification et les politiques de masquage sont distincts de la persistance des descriptions.
+Il y a des frontières. Le réglage ci-dessus concerne les relations et colonnes des modèles. dbt **n’implémente pas** `persist_docs` pour les sources. Pour écrire des commentaires sur les tables sources brutes, il faut un script ou une macro séparée utilisant [Snowflake `COMMENT`](https://docs.snowflake.com/en/sql-reference/sql/comment), avec les bons privilèges sur les objets. Et les commentaires ne transforment pas les champs `meta` personnalisés en tags Snowflake ou en politiques de masquage.
 
-Et si tu utilises [Snowflake Horizon](https://docs.snowflake.com/en/user-guide/snowflake-horizon) (leur plateforme de gouvernance), ces descriptions alimentent directement le catalogue de données. Ta documentation dbt EST ta documentation Snowflake. Une seule source de vérité.
+C’est cette séparation que je garde explicite : les descriptions deviennent des commentaires grâce à une fonctionnalité dbt prise en charge ; le reste des métadonnées a besoin de sa propre intégration.
 
 ## Forcer la documentation en CI
 
-Mon point de vue là-dessus est assez tranché : la documentation, c'est aussi obligatoire que le code lui-même. Pas un nice-to-have, pas quelque chose qu'on fera "quand on aura le temps". Si tu déploies du code non testé en production, c'est un problème. Déployer un modèle non documenté devrait l'être tout autant.
+Mon avis n’a pas changé : la documentation fait partie du modèle. Si une PR ajoute une colonne inexpliquée, « on la documentera plus tard » n’est pas un plan de déploiement très convaincant.
 
-Et si tu automatises tout le reste (déploiements, tests, validations), pourquoi la documentation échapperait-elle à cette logique ? La CI est la réponse évidente. C'est le premier check que j'y mets : avant même de valider la logique des transformations, on vérifie que la documentation est là.
+Les contrôles que je veux sont concrets :
 
-Concrètement, ça donne une étape qui valide la complétude :
-- Chaque modèle Silver et Gold doit avoir une description
-- Chaque colonne dans le SQL doit être présente dans le YAML
-- Chaque colonne documentée doit avoir une description non vide
+- Chaque modèle Silver et Gold a une description.
+- Chaque colonne de la relation construite est couverte dans le YAML.
+- Chaque colonne documentée a une description non vide.
 
-Si une PR ajoute un modèle sans documentation, la CI fail. Point final. C'est la seule façon de maintenir la discipline sur le long terme. Le package [dbt-meta-testing](https://github.com/tnightengale/dbt-meta-testing) fait exactement ça : il expose des macros `required_docs` et `required_tests` que tu branches dans ta pipeline.
+Un contrôle statique peut inspecter les descriptions du manifest avant le build. Comparer les colonnes déclarées à celles de la relation réelle, c’est un autre contrôle : la relation doit exister.
 
-## Les tags de gouvernance : du YAML au masquage
+Le package [`dbt-meta-testing`](https://github.com/tnightengale/dbt-meta-testing) est une manière de faire ce deuxième travail. Sa macro `required_docs` vérifie les modèles configurés après leur construction ; les modèles éphémères sont exclus. `required_tests` vérifie la couverture de tests configurée. Ce sont des opérations à mettre dans le pipeline, pas des contrôles que dbt lance discrètement pour tous les projets. Je figerais la version du package et je la vérifierais avec la version de dbt qu’on utilise.
 
-Là où ça devient puissant, c'est quand tu combines les métadonnées YAML avec les fonctionnalités de gouvernance de Snowflake.
+Une séquence CI avec ce package peut construire les modèles concernés, lancer `dbt run-operation required_docs`, puis faire échouer le job si la documentation est incomplète. Les [tests de données]({{< ref "/blog/dbt-tests-contraintes-yml/" >}}), séparément, vérifient les assertions sur les lignes. Les deux comptent. Une belle description ne repère pas un identifiant dupliqué.
 
-Tu déclares dans ton YAML qu'une colonne contient du PII. dbt peut appliquer un tag Snowflake correspondant quand il crée le modèle, via un post-hook qu'on écrit nous-mêmes, c'est pas du built-in. Et Snowflake, grâce à des politiques de masquage liées aux tags, masque automatiquement la valeur pour les utilisateurs qui n'ont pas le bon rôle.
+## Des métadonnées aux tags et au masquage
 
-Le résultat : tu documentes tes colonnes dans le YAML, et le masquage de données se fait tout seul. Pas de logique de masquage dans le SQL, pas de vues spéciales, pas de maintenance. La gouvernance découle directement de la documentation.
+Un champ YAML qui dit `classification: pii` ne masque rien tout seul.
 
-## Les tests : la documentation qui se vérifie
+L’implémentation a plusieurs morceaux. Les tags et les politiques de masquage Snowflake sont créés et maintenus. Un hook personnalisé ou une étape de déploiement traduit nos valeurs de métadonnées convenues en tags existants. Snowflake applique ensuite la politique associée au moment de la requête. Le [masquage basé sur les tags](https://docs.snowflake.com/en/user-guide/tag-based-masking-policies) demande Enterprise Edition ou supérieur et les privilèges appropriés.
 
-Les YAML de dbt ne servent pas qu'à la documentation, ils servent aussi aux tests. Et c'est là que ça boucle : ta documentation devient vérifiable.
+Il reste du SQL de politique à écrire, des comportements de rôles à vérifier et une intégration à maintenir. Je veux que le YAML fournisse la classification, plutôt que de la recopier dans chaque vue. Mais je testerais le résultat avec les rôles censés voir des données masquées. La présence d’un tag ne prouve pas que tout le montage fait ce qu’on voulait.
 
-Tu documentes qu'un `order_id` est une clé primaire ? Mets un test `unique` et `not_null`. Tu documentes qu'un statut ne peut avoir que certaines valeurs ? Mets un test `accepted_values`. Tu documentes qu'une colonne référence une autre table ? Mets un test de relation.
+La responsabilité fonctionne pareil. Un owner ou un steward dans `meta` aide quelqu’un qui lit la doc dbt. Pour rendre ce contact visible ailleurs dans Snowflake, il faut une traduction explicite en commentaires, en tags ou une autre intégration de catalogue. Le YAML est l’entrée de ce travail, pas un moyen de transport à lui seul.
 
-Les tests sont déclarés au même endroit que la documentation. Un seul fichier YAML qui dit : "cette colonne s'appelle X, elle contient Y, elle ne peut pas être nulle, et ses valeurs possibles sont Z." La documentation et les tests sont la même chose. On revient là-dessus en détail dans [l'article sur les tests dbt]({{< ref "/blog/dbt-tests-contraintes-yml/" >}}).
+## Les tests vérifient des assertions, pas chaque phrase
 
-Quand les tests passent, ta documentation est prouvée correcte. Quand un test fail, ta documentation ou tes données sont fausses. Dans les deux cas, tu dois investiguer.
+La boucle reste intéressante : tu documentes qu’un `order_id` est une clé, tu ajoutes `unique` et `not_null`. Tu documentes les statuts permis, tu ajoutes `accepted_values`. Tu documentes une référence vers une autre table, tu ajoutes `relationships`.
 
-## Les contacts de gouvernance
+Le même YAML porte l’explication et le contrôle. C’est ça que j’aime.
 
-Un aspect souvent négligé : qui est responsable de quoi ? Dans les métadonnées de chaque modèle, tu peux déclarer un propriétaire, un steward, un approbateur. Ces métadonnées sont poussées vers Snowflake via un post-hook custom (encore une fois, c'est du bricolage maison, pas du dbt natif).
+Mais des tests qui passent ne soutiennent que les assertions qu’ils vérifient vraiment, sur les données qu’ils ont interrogées. Ils ne prouvent pas qu’une définition métier est juste, qu’un responsable est toujours le bon ou qu’une classification remplit une obligation légale. Quelqu’un doit encore relire ces décisions. Je développe la partie tests dans [l’article sur les tests dbt et la CI]({{< ref "/blog/dbt-tests-contraintes-yml/" >}}).
 
-Quand quelqu'un trouve un problème de données, il sait exactement qui contacter. Pas besoin de chercher dans un wiki ou de demander à la cantonade. L'information est attachée directement aux données elles-mêmes.
+## La documentation aide la couche sémantique ; elle ne la remplace pas
 
-## Le coût réel : c'est moins que tu penses
+Les descriptions ont un deuxième public : les outils qui aident les gens à poser des questions à leurs données.
 
-Le reproche classique : "ça prend du temps de documenter chaque colonne." C'est vrai. Mais compare avec l'alternative :
-- Des heures perdues par les analystes à deviner ce que les colonnes veulent dire
-- Des erreurs dans les rapports parce que quelqu'un a interprété un champ de travers
-- Des audits qui prennent des semaines parce que personne sait quelles données sont sensibles
-- Des incidents de sécurité parce qu'une colonne PII n'était pas identifiée comme telle
+[Snowflake Cortex Analyst](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst) génère du SQL à partir de questions en langage naturel et d’un contexte sémantique. La documentation actuelle de Snowflake recommande les Semantic Views pour ce contexte, et oriente les nouvelles implémentations vers Cortex Agents. Le prérequis qui m’intéresse reste le même : quelqu’un doit définir ce que les données veulent dire.
 
-Documenter une colonne prend 30 secondes. Ne pas la documenter peut coûter des heures, des jours, ou pire. Et avec les LLMs, le coût de départ a encore baissé : [documenter une base source entière]({{< ref "/blog/dbt-documenter-source-llm-multi-agent/" >}}) en quelques jours n'est plus une utopie.
+De bonnes descriptions de colonnes sont une entrée utile. Ce n’est pas un modèle sémantique complet. Il faut encore les relations, les dimensions, les faits, les métriques métier et des exemples de questions auxquelles on veut que le système réponde.
 
-## Le bonus : la documentation comme clé du talk to my data
+Le package Snowflake Labs [`dbt_semantic_view`](https://github.com/Snowflake-Labs/dbt_semantic_view) permet de définir un modèle `semantic_view` avec le SQL des vues sémantiques Snowflake. Il ne convertit pas automatiquement des descriptions dbt ordinaires, ni un modèle sémantique MetricFlow, en couche conversationnelle qui fonctionne. Les définitions restent à écrire.
 
-La documentation sert deux audiences : tes collègues humains, et les LLMs. Et c'est là que ça devient intéressant.
+Et il faut évaluer les réponses générées. Les [évaluations Cortex Analyst](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst-evaluations) comparent les résultats du SQL généré à ceux de requêtes vérifiées. Je ne promettrais pas une date de livraison parce que le YAML est propre. Je commencerais par un petit domaine métier, des questions qu’on peut contrôler et des définitions dont quelqu’un accepte d’être responsable.
 
-[Snowflake Cortex Analyst](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst) est la réponse de Snowflake au "talk to my data" : poser une question en langage naturel et obtenir la requête SQL correcte en retour. Demander une KPI précise, la filtrer selon des critères, la comparer avec une autre métrique, sans écrire une ligne de SQL. Ça paraît magique. Et les gens pensent spontanément que c'est des mois de travail d'ingénierie pour y arriver.
+Le travail de documentation n’est pas perdu. C’est la partie qu’il faudrait sinon reconstruire plus tard, en essayant en plus de déboguer une réponse qui paraît plausible.
 
-Ce n'est pas le cas, si la documentation est propre.
+## Ce que j’en retiens
 
-Cortex Analyst fonctionne à partir d'un modèle sémantique : un fichier YAML qui décrit les tables, les colonnes, les métriques, les relations entre entités, et le vocabulaire métier associé. La structure de ce fichier est très proche de ce que dbt produit déjà dans ses fichiers de documentation. L'infrastructure existe. Les modèles existent. Si les descriptions de colonnes sont là, si les relations sont documentées, si les métriques clés sont définies, le gap pour Cortex Analyst est faible.
+Documenter chaque colonne prend du temps. Demander à la même personne ce qu’un champ veut dire chaque fois qu’on prépare un nouveau rapport, aussi. Les LLM peuvent aider à produire un premier jet, comme je l’ai raconté dans [le projet de documentation d’une base source]({{< ref "/blog/dbt-documenter-source-llm-multi-agent/" >}}). Relire le sens reste notre boulot.
 
-Snowflake Labs a même publié [`dbt_semantic_view`](https://github.com/Snowflake-Labs/dbt_semantic_view), un package qui génère des Semantic Views Snowflake directement depuis le modèle sémantique dbt. Ces Semantic Views sont nativement exploitables par Cortex Analyst. Le pipeline devient : dbt documente → dbt_semantic_view publie les vues sémantiques → Cortex Analyst répond aux questions en langage naturel.
+Ce qui a marché pour moi, c’est de traiter la documentation avec le même sérieux que le [code de transformation]({{< ref "/blog/dbt-data-infrastructure-as-code/" >}}) : versionnée, relue et contrôlée en CI. Les descriptions restent à côté des modèles ; les fonctionnalités prises en charge les transportent dans l’entrepôt ; des intégrations explicites emmènent les métadonnées de gouvernance plus loin.
 
-Un projet dbt bien documenté est à 2-4 semaines d'un talk to my data fonctionnel, pas à 6 mois. Le travail restant (formaliser quelques métriques, distinguer dimensions et mesures, ajouter des synonymes métier) est marginal comparé à ce qui est déjà en place. C'est un quick win qui ne se débloque qu'avec une condition : avoir traité la documentation comme une contrainte dès le début, pas comme une tâche à faire plus tard.
-
-## Ce que j'en retiens
-
-Au final, ce qui a marché pour moi, c'est de traiter la documentation des données avec le même sérieux que le code de transformation. Pas comme un nice-to-have qu'on fera "quand on aura le temps." Comme une partie intégrante du pipeline, vérifiée en CI, propagée automatiquement.
-
-Les YAML de dbt sont l'endroit idéal pour ça. Un seul fichier qui sert à la documentation humaine, aux tests automatisés, et à la gouvernance de données. Ça sonne fancy dit comme ça, mais en pratique c'est juste des fichiers YAML qui font leur job.
+Un seul fichier ne nous donne pas une gouvernance des données. Il nous donne un endroit pour rendre les règles visibles, et un pipeline dans lequel faire respecter celles qu’on a vraiment implémentées. C’est déjà beaucoup plus utile que du texte optionnel que personne ne lit.
