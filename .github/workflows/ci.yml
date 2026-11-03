@@ -40,3 +40,6 @@ jobs:
 
       - name: Check www redirect behavior
         run: node --test cloudflare/www-redirect/redirect.test.mjs
+
+      - name: Check analytics events and article reading
+        run: node --test scripts/test-analytics.mjs

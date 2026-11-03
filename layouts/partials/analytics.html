@@ -1,0 +1,42 @@
+{{ if hugo.IsProduction }}
+  {{ $group := "collection" }}
+  {{ if .IsHome }}{{ $group = "portfolio" }}
+  {{ else if and .IsPage (eq .Section "blog") }}{{ $group = "article" }}
+  {{ else if eq .Section "resume" }}{{ $group = "resume" }}{{ end }}
+  {{ $context := dict "page_locale" .Lang "content_group" $group "content_id" .TranslationKey }}
+  {{ $projects := slice }}
+  {{ range .Site.Menus.main }}
+    {{ if eq .Identifier "projects" }}
+      {{ range .Children }}{{ $projects = $projects | append (dict "name" .Name "url" .URL) }}{{ end }}
+    {{ end }}
+  {{ end }}
+  {{ $vitals := resources.Get "js/vendor/web-vitals.js" | resources.Fingerprint "sha256" }}
+  {{ $analytics := resources.Get "js/analytics.js" | resources.Minify | resources.Fingerprint "sha256" }}
+  <script>
+    window.siteAnalyticsContext = {{ $context | jsonify | safeJS }};
+    window.siteAnalyticsProjects = {{ $projects | jsonify | safeJS }};
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    if (location.hostname === 'damiengoehrig.ca') {
+      let debug = false;
+      try { debug = sessionStorage.getItem('site-analytics-debug') === '1'; } catch {}
+      gtag('js', new Date());
+      gtag('config', 'G-NLSWSR28NP', {...window.siteAnalyticsContext, ...(debug ? {debug_mode:true} : {})});
+      // Preserve the existing deferred Google tag loading strategy.
+      let loaded = false;
+      function loadGoogleTag() {
+        if (loaded) return;
+        loaded = true;
+        const tag = document.createElement('script');
+        tag.async = true;
+        tag.src = 'https://www.googletagmanager.com/gtag/js?id=G-NLSWSR28NP';
+        document.head.append(tag);
+      }
+      ['pointerdown','keydown','scroll'].forEach(type => addEventListener(type,loadGoogleTag,{once:true,passive:true}));
+      const arm = () => setTimeout(loadGoogleTag,3000);
+      if (document.readyState === 'complete') arm();
+      else addEventListener('load',arm,{once:true});
+    }
+  </script>
+  <script src="{{ $analytics.RelPermalink }}" integrity="{{ $analytics.Data.Integrity }}" data-web-vitals="{{ $vitals.RelPermalink }}" defer></script>
+{{ end }}
