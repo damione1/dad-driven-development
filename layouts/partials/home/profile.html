@@ -40,7 +40,7 @@
       {{ with .Site.GetPage "/resume" }}
         <a href="{{ .RelPermalink }}" data-profile-action="resume">{{ if eq $.Lang "fr" }}Voir mon CV{{ else }}View my resume{{ end }}</a>
       {{ end }}
-      <a href="mailto:contact@damiengoehrig.ca" data-profile-action="contact">{{ if eq .Lang "fr" }}Me contacter{{ else }}Contact me{{ end }}</a>
+      <a href="{{ "contact/" | relLangURL }}" data-profile-action="contact">{{ if eq .Lang "fr" }}Me contacter{{ else }}Contact me{{ end }}</a>
     </div>
     <div class="mt-1 text-2xl">
       {{ partialCached "author-links.html" . }}

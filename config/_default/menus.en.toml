@@ -89,3 +89,8 @@
   url = "https://github.com/damione1/"
   weight = 400
   newTab = true
+
+[[main]]
+  name = "Contact"
+  url = "/contact/"
+  weight = 50

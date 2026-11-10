@@ -20,6 +20,6 @@ title = "Damien GOEHRIG"
   links = [
     { github = "https://github.com/damione1/" },
     { linkedin = "https://www.linkedin.com/in/damiengoehrig/" },
-    { email = "mailto:contact@damiengoehrig.ca" },
+    { email = "/fr/contact/" },
     { rss = "/index.xml" }
   ]

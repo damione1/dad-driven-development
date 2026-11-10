@@ -12,3 +12,10 @@
   {{- end -}}
 {{- end -}}
 {{- partial "analytics.html" . -}}
+
+{{ if .Params.contactPage }}
+  {{ $css := resources.Get "css/contact.css" | minify | fingerprint }}
+  <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+  {{ $js := resources.Get "js/contact.js" | minify | fingerprint }}
+  <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
+{{ end }}

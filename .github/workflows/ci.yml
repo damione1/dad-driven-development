@@ -43,3 +43,6 @@ jobs:
 
       - name: Check analytics events and article reading
         run: node --test scripts/test-analytics.mjs
+
+      - name: Check contact validation and privacy
+        run: node --test cloudflare/contact/contact.test.mjs

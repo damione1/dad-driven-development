@@ -8,7 +8,6 @@ location: "Montreal, QC, Canada"
 
 # Sidebar content
 contact:
-  email: "contact@damiengoehrig.ca"
   website: "https://damiengoehrig.ca"
   linkedin: "https://www.linkedin.com/in/damiengoehrig"
   github: "https://github.com/Damione1"

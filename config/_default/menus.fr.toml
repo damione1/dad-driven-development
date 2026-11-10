@@ -89,3 +89,8 @@
   url = "https://www.linkedin.com/in/damiengoehrig/"
   weight = 400
   newTab = true
+
+[[main]]
+  name = "Contact"
+  url = "/fr/contact/"
+  weight = 50

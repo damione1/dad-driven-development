@@ -5,12 +5,9 @@
   <div class="resume-sidebar-section">
     <h3>Contact</h3>
     <div class="resume-sidebar-content">
-      {{ with .email }}
       <div style="margin-bottom: 0.75rem;">
-        <strong>Email:</strong><br>
-        <a href="mailto:{{ . }}">{{ . }}</a>
+        <a href="{{ "contact/" | relLangURL }}">{{ if eq $.Lang "fr" }}Me contacter{{ else }}Contact me{{ end }}</a>
       </div>
-      {{ end }}
       {{ with .website }}
       <div style="margin-bottom: 0.75rem;">
         <strong>Website:</strong><br>
